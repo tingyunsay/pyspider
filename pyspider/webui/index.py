@@ -16,19 +16,34 @@ except ImportError:
     from flask.ext import login
 
 from .app import app
+from flask import Flask
+from flask_cas import CAS, login_required
+#from flask.ext.cas import login
+#from flask.ext.cas import logout
+from flask_cas import login
+from flask_cas import logout
+#app = Flask("hong")
+cas = CAS(app)
+app.config['CAS_SERVER'] = 'http://127.0.0.1:8080/cas-server-webapp-4.0.0/'
+#app.config['CAS_SERVER'] = 'http://cas.taihenw.com/'
+app.config['CAS_AFTER_LOGIN'] = '/'
+app.config['SECRET_KEY'] = 'guess'
+
 
 index_fields = ['name', 'group', 'status', 'comments', 'rate', 'burst', 'updatetime']
 
 
 @app.route('/')
+@login_required
 def index():
     projectdb = app.config['projectdb']
     projects = sorted(projectdb.get_all(fields=index_fields),
                       key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
-    return render_template("index.html", projects=projects)
+    return render_template("index.html", projects=projects , info = cas)
 
 
 @app.route('/queues')
+@login_required
 def get_queues():
     def try_get_qsize(queue):
         if queue is None:
@@ -43,9 +58,24 @@ def get_queues():
     for key in queues:
         result[key] = try_get_qsize(queues[key])
     return json.dumps(result), 200, {'Content-Type': 'application/json'}
-
+from xmltodict import parse
+#@csrf.exempt
+@app.route('/login/', methods=['POST'])
+@login_required
+def cas_logout():
+	if request.form.get('logoutRequest'):
+		logout_request = parse(request.form['logoutRequest'])
+		ticket = logout_request.get('samlp:LogoutRequest', {}).get('samlp:SessionIndex')
+		if ticket:
+			sess = r.get(ticket)
+			if sess:
+				r.delete(sess)
+				r.delete(ticket)
+				return "OK"
+	return "Bad Request",400
 
 @app.route('/update', methods=['POST', ])
+@login_required
 def project_update():
     projectdb = app.config['projectdb']
     project = request.form['pk']
@@ -91,6 +121,7 @@ def project_update():
 
 
 @app.route('/counter')
+@login_required
 def counter():
     rpc = app.config['scheduler_rpc']
     if rpc is None:

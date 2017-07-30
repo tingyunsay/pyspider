@@ -64,6 +64,7 @@ fetcher_output = {
 
 
 class Fetcher(object):
+    #app.py中config.update的时候实例化
     user_agent = "pyspider/%s (+http://pyspider.org/)" % pyspider.__version__
     default_options = {
         'method': 'GET',
@@ -78,6 +79,7 @@ class Fetcher(object):
     splash_lua_source = open(os.path.join(os.path.dirname(__file__), "splash_fetcher.lua")).read()
     robot_txt_age = 60*60  # 1h
 
+    #启动两个queue均为None , async为False
     def __init__(self, inqueue, outqueue, poolsize=100, proxy=None, async=True):
         self.inqueue = inqueue
         self.outqueue = outqueue
@@ -95,6 +97,7 @@ class Fetcher(object):
         if self.async:
             self.http_client = MyCurlAsyncHTTPClient(max_clients=self.poolsize,
                                                      io_loop=self.ioloop)
+        #本系统默认是走这段
         else:
             self.http_client = tornado.httpclient.HTTPClient(MyCurlAsyncHTTPClient, max_clients=self.poolsize)
 
@@ -112,13 +115,14 @@ class Fetcher(object):
                 self.outqueue.put((task, result))
             except Exception as e:
                 logger.exception(e)
-
+    #
     def fetch(self, task, callback=None):
         if self.async:
             return self.async_fetch(task, callback)
         else:
             return self.async_fetch(task, callback).result()
 
+    #真正的抓取实现代码，从task（需要了解其数据结构）中取出数据并处理（默认走的send_result，继续看）
     @gen.coroutine
     def async_fetch(self, task, callback=None):
         '''Do one fetch'''

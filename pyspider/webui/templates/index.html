@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Dashboard - pyspider</title>
+    <title>Dashboard - tingyun-spider</title>
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
@@ -23,8 +23,18 @@
         <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         Project is not started, please set status to RUNNING or DEBUG.
       </div>
-      <h1>pyspider dashboard</h1>
-      <table class="table queue-info">
+      <table width = "100%" border=2 class = "all_info">
+      <tr>
+      	<th colspan = 5><h1>tingyun-spider dashboard</h1></th>	
+      	<th colspan = 2 style="text-align:right">welcome : {{ info.username }}</th>
+      	<th colspan = 2 style="text-align:right">
+		<form action="{{ url_for("cas.logout") }}" >
+			<input type="submit" value="注销" logoutRequest={{ info }} />
+		</form>
+	</th>
+      </tr>
+      </table>
+      <table class="table queue-info" border = 2>
         <tr>
           <th>scheduler</th>
           <td class="queue_value" title="scheduler2fetcher">???</td>
