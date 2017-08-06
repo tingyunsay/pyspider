@@ -28,19 +28,38 @@ app.config['CAS_SERVER'] = 'http://127.0.0.1:8080/cas-server-webapp-4.0.0/'
 #app.config['CAS_SERVER'] = 'http://cas.taihenw.com/'
 app.config['CAS_AFTER_LOGIN'] = '/'
 app.config['SECRET_KEY'] = 'guess'
+#设定logout默认指向页面
+app.config['CAS_AFTER_LOGOUT'] = "http://localhost:5000"
 
 
 index_fields = ['name', 'group', 'status', 'comments', 'rate', 'burst', 'updatetime']
 
 
-@app.route('/')
+@app.route('/old_index')
 @login_required
-def index():
+def index2():
     projectdb = app.config['projectdb']
     projects = sorted(projectdb.get_all(fields=index_fields),
                       key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
     return render_template("index.html", projects=projects , info = cas)
 
+
+@app.route('/')
+@login_required
+def index():
+    return render_template("control.html", info = cas)
+
+
+@app.route('/check_cas')
+@login_required
+def check_cas():
+    spidermanagerdb = app.config['spidermanagerdb']
+    #get_all只需要选择提取的字段，返回一个生成器，较为简单
+    #person_info = spidermanagerdb.get_all(fields=('name', 'group'))
+    person_info = spidermanagerdb.get("liaohong" , fields=('name', 'group'))
+    return json.dumps(person_info), 200, {'Content-Type': 'application/json'}
+
+    
 
 @app.route('/queues')
 @login_required
@@ -58,21 +77,6 @@ def get_queues():
     for key in queues:
         result[key] = try_get_qsize(queues[key])
     return json.dumps(result), 200, {'Content-Type': 'application/json'}
-from xmltodict import parse
-#@csrf.exempt
-@app.route('/login/', methods=['POST'])
-@login_required
-def cas_logout():
-	if request.form.get('logoutRequest'):
-		logout_request = parse(request.form['logoutRequest'])
-		ticket = logout_request.get('samlp:LogoutRequest', {}).get('samlp:SessionIndex')
-		if ticket:
-			sess = r.get(ticket)
-			if sess:
-				r.delete(sess)
-				r.delete(ticket)
-				return "OK"
-	return "Bad Request",400
 
 @app.route('/update', methods=['POST', ])
 @login_required
@@ -143,6 +147,7 @@ def counter():
 
 
 @app.route('/run', methods=['POST', ])
+@login_required
 def runtask():
     rpc = app.config['scheduler_rpc']
     if rpc is None:
@@ -180,6 +185,7 @@ def runtask():
 
 
 @app.route('/robots.txt')
+@login_required
 def robots():
     return """User-agent: *
 Disallow: /

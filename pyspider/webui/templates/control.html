@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Dashboard - tingyun-spider</title>
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <meta name="description" content="pyspider dashboard">
+    <meta name="author" content="binux">
+    <link href="{{ url_for('cdn', path='twitter-bootstrap/3.1.1/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('cdn', path='x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css') }}" rel="stylesheet">
+    <link href="{{ url_for('cdn', path='sortable/0.6.0/css/sortable-theme-bootstrap.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='index.min.css') }}" rel="stylesheet">
+
+    <script src="{{ url_for('cdn', path='jquery/1.11.0/jquery.min.js') }}"></script>
+  </head>
+
+  <body>
+    <header>
+      <div id="need-set-status-alert" class="alert alert-danger alert-dismissible" style="display:none;" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        Project is not started, please set status to RUNNING or DEBUG.
+      </div>
+      <table width = "100%" border=2 class = "all_info">
+      <tr>
+      	<th colspan = 5><h1>tingyun-spider dashboard</h1></th>	
+      	<th colspan = 2 style="text-align:right">welcome : {{ info.username }}</th>
+      	<th colspan = 2 style="text-align:right">
+		<form action="{{ url_for("cas.logout") }}" >
+			<input type="submit" value="注销" logoutRequest={{ info }} />
+		</form>
+	</th>
+      </tr>
+      </table>
+
+    <table>        
+    	<form action="{{ url_for("check_cas") }}" >
+		<input type="submit" value="权限管理" logoutRequest={{ info }} />
+	</form>         
+    	<form action="{{ url_for("index2") }}" >
+		<input type="submit" value="控制台" logoutRequest={{ info }} />
+	</form>         
+    	<form action="{{ url_for("index2") }}" >
+		<input type="submit" value="报表查看" logoutRequest={{ info }} />
+	</form>         
+    </table>
+ 
+    <table>
+	CAS INFO:</br>
+	{{ info.attributes }} </br>
+	{{ info.token }} </br>
+	{{ info.username }} </br>
+	{{ info.app }} </br>
+	{{ info.__dict__ }} </br>
+	{{ info.__weakref__ }} </br>
+
+    </table>
+    
+    <script src="{{ url_for('cdn', path='twitter-bootstrap/3.1.1/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('cdn', path='x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js') }}"></script>
+    <script src="{{ url_for('cdn', path='sortable/0.6.0/js/sortable.min.js') }}"></script>
+    <script src="{{ url_for('cdn', path='vue/1.0.26/vue.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='index.min.js') }}"></script>
+  </body>
+</html>
+<!-- vim: set et sw=2 ts=2 sts=2 ff=unix fenc=utf8 syntax=htmldjango: -->
+

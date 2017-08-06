@@ -83,7 +83,7 @@ class QuitableFlask(Flask):
             self.ioloop.add_callback(self.ioloop.stop)
         self.logger.info('webui exiting...')
 
-
+#指定app名，并指定static和template路径
 app = QuitableFlask('webui',
                     static_folder=os.path.join(os.path.dirname(__file__), 'static'),
                     template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
@@ -99,6 +99,7 @@ app.config.update({
     'scheduler_rpc': None,
     'queues': dict(),
     'process_time_limit': 30,
+    'spidermanagerdb': None,
 })
 
 

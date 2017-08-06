@@ -1,0 +1,12 @@
+{
+  "taskdb": "mysql+taskdb://root:tingyun@localhost:3306/taskdb2",
+  "projectdb": "mysql+projectdb://root:tingyun@localhost:3306/projectdb2",
+  "resultdb": "mysql+resultdb://root:tingyun@localhost:3306/resultdb2",
+  "spidermanagerdb": "mysql+spidermanagerdb://root:tingyun@localhost:3306/spidermanagerdb",
+  "message_queue": "redis://127.0.0.1:6379/db",
+  "webui": {
+    "username": "hong",
+    "password": "hong",
+    "need-auth": true
+  }
+}
