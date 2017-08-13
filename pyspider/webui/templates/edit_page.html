@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit_page</title>
+</head>
+<body>
+
+
+<form method="POST" action="{{ url_for("edit") }}">
+
+<table align="center">
+    <tr>
+        <td>用户姓名</td>
+        <td> <input value="{{ info.name }}" type="text" name="name"></td>
+    </tr>
+    <tr>
+        <td>所属角色</td>
+        <td> <input value="{{ info.role }}" type="text" name="role"></td>
+    </tr>
+    <tr>
+        <td>所在用户组</td>
+        <td><input value="{{ info.group }}" type="text" name="group"></td>
+    </tr>
+    <tr>
+        <td>其他信息</td>
+        <td><input value="{{ info.info }}" type="text" name="info"></td>
+    </tr>
+    <tr>
+        <input type="hidden" value="{{ info.cas_user_name }}" name="cas_user_name">
+        <td colspan="2"><input type="submit" value="修改用户信息">
+    </tr>
+</table>
+
+</form>
+
+</body>
+</html>

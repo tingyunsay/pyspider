@@ -17,6 +17,7 @@ except ImportError:
 
 from .app import app
 from flask import Flask
+from flask import session, redirect, url_for
 from flask_cas import CAS, login_required
 #from flask.ext.cas import login
 #from flask.ext.cas import logout
@@ -33,7 +34,7 @@ app.config['CAS_AFTER_LOGOUT'] = "http://localhost:5000"
 
 
 index_fields = ['name', 'group', 'status', 'comments', 'rate', 'burst', 'updatetime']
-
+spidermanager_fields = ['name', 'role', 'group' , 'info']
 
 @app.route('/old_index')
 @login_required
@@ -50,16 +51,106 @@ def index():
     return render_template("control.html", info = cas)
 
 
-@app.route('/check_cas')
+@app.route('/check_cas/<user_name>' , methods=['POST','GET'])
 @login_required
-def check_cas():
+def check_cas(user_name):
+    name = user_name
+    #name = request.form.to_dict()['name']
     spidermanagerdb = app.config['spidermanagerdb']
     #get_all只需要选择提取的字段，返回一个生成器，较为简单
     #person_info = spidermanagerdb.get_all(fields=('name', 'group'))
-    person_info = spidermanagerdb.get("liaohong" , fields=('name', 'group'))
-    return json.dumps(person_info), 200, {'Content-Type': 'application/json'}
+    person_info = spidermanagerdb.get(name , fields=spidermanager_fields)
+    if person_info:
+        if person_info['role'] == 'Admin':
+            all_info = sorted(spidermanagerdb.get_all(fields=spidermanager_fields))
+            return render_template("manager.html",all_info = all_info ,cas_user = name )
+        elif person_info['role'] == "RD":
+            return json.dumps(person_info), 200, {'Content-Type': 'application/json'}
+        elif person_info['role'] == "PM":
+            return json.dumps(person_info), 200, {'Content-Type': 'application/json'}
+        else:
+            return "Unkonw Error，未知错误，请联系管理员！", 404, {'Content-Type': 'application/json'}
+    else:
+    	return "Invid Person，用户不存在，请注册！",403,{'Content-Type': 'application/json'}
 
-    
+#限定使用post
+@app.route('/update_right' , methods=['POST',])
+@login_required
+def update_right():
+    right_info = request.form.to_dict()
+    spidermanagerdb = app.config['spidermanagerdb']
+    if not spidermanagerdb.verify_project_name(right_info.get('name')):
+        return 'manager name is not allowed!', 400
+
+    all_name = spidermanagerdb.get_all(fields=['name'])
+    for i in all_name:
+        if right_info.get('name') == i['name']:
+            return '用户已存在，请编辑!', 400
+        else:
+            #将前台传过来的数据插入（验证后续再做）
+            info = {
+                'name': right_info.get('name'),
+                'role': right_info.get('role'),
+                'group': right_info.get('group')
+            }
+            spidermanagerdb.insert(info)
+            #res =  json.dumps({"res":['添加用户成功!',200]})
+            return redirect(url_for('check_cas', user_name=right_info.get('cas_user') ))
+
+
+
+#限定使用post
+@app.route('/edit' , methods=['POST',])
+@login_required
+def edit():
+    if request.method == 'POST':
+        total_info = request.form.to_dict()
+        edit_info = total_info.copy()
+        edit_info.pop('cas_user_name')
+        spidermanagerdb = app.config['spidermanagerdb']
+        all_info = spidermanagerdb.get_all(fields=spidermanager_fields)
+        all_name = []
+        for x in all_info:
+            all_name.append(x.get('name'))
+        if edit_info.get('name') in all_name:
+            spidermanagerdb.update(edit_info.get('name'),edit_info)
+            return redirect(url_for('check_cas', user_name=total_info.get('cas_user_name')))
+        else:
+            return '未知错误!', 400
+    else:
+        return '非法请求!', 400
+
+
+@app.route('/edit_page' , methods=['POST',])
+@login_required
+def edit_page():
+    if request.method == 'POST':
+        edit_info = request.form.to_dict()
+        edit_name = edit_info.get('edit_name')
+        spidermanagerdb = app.config['spidermanagerdb']
+        all_info = spidermanagerdb.get(edit_name , fields=spidermanager_fields)
+        cas_name = edit_info.get('cas_user_name')
+        all_info['cas_user_name'] = cas_name
+        return render_template("edit_page.html",info = all_info)
+
+    else:
+        return '非法请求!', 400
+
+#限定使用post
+@app.route('/delete' , methods=['POST',])
+@login_required
+def delete():
+    right_info = request.form.to_dict()
+    spidermanagerdb = app.config['spidermanagerdb']
+    cas_user_name = right_info.get('cas_user')
+    drop_name = right_info.get('delete_name')
+    if drop_name:
+        spidermanagerdb.drop(drop_name)
+        return redirect(url_for('check_cas', user_name=cas_user_name))
+    else:
+        return "未知错误，请联系管理员！", 404, {'Content-Type': 'application/json'}
+
+
 
 @app.route('/queues')
 @login_required

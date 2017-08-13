@@ -36,18 +36,19 @@
       </table>
 
     <table>        
-    	<form action="{{ url_for("check_cas") }}" >
-		<input type="submit" value="权限管理" logoutRequest={{ info }} />
+    	<form  method="POST" action="{{ url_for("check_cas", user_name=info.username) }}">
+            <input type="hidden" value = {{ info.username}} name = "name">
+            <input type="submit" value="权限管理"  />
+	    </form>
+    	<form  method="POST" action="{{ url_for("index2") }}" >
+		<input type="submit" value="控制台" name={{ info.username }} />
 	</form>         
-    	<form action="{{ url_for("index2") }}" >
-		<input type="submit" value="控制台" logoutRequest={{ info }} />
-	</form>         
-    	<form action="{{ url_for("index2") }}" >
-		<input type="submit" value="报表查看" logoutRequest={{ info }} />
+    	<form  method="POST" action="{{ url_for("index2") }}" >
+		<input type="submit" value="报表查看" name={{ info.username }} />
 	</form>         
     </table>
  
-    <table>
+    <table></br></br></br></br></br></br></br></br></br></br></br>
 	CAS INFO:</br>
 	{{ info.attributes }} </br>
 	{{ info.token }} </br>
@@ -55,7 +56,6 @@
 	{{ info.app }} </br>
 	{{ info.__dict__ }} </br>
 	{{ info.__weakref__ }} </br>
-
     </table>
     
     <script src="{{ url_for('cdn', path='twitter-bootstrap/3.1.1/js/bootstrap.min.js') }}"></script>
