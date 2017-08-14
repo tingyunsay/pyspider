@@ -27,7 +27,8 @@
         <td colspan="3">
             <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#update-right">添加权限</button>
         </td>
-        <th colspan=2 style="text-align:right">welcome : {{ cas_user }}</th>
+        <th ><a href="/">返回上一层</a></th>
+        <th style="text-align:right">welcome : {{ cas_user }}</th>
         <th style="text-align:right">
             <form action="{{ url_for("cas.logout") }}" >
                 <input type="submit" value="注销" logoutRequest={{ info }}/>

@@ -12,6 +12,7 @@ import socket
 import inspect
 import datetime
 import traceback
+import re
 from flask import render_template, request, json
 
 try:
@@ -19,6 +20,7 @@ try:
 except ImportError:
     from flask.ext import login
 
+#查看建立代码的模板
 from pyspider.libs import utils, sample_handler, dataurl
 from pyspider.libs.response import rebuild_response
 from pyspider.processor.project_module import ProjectManager, ProjectFinder
@@ -37,6 +39,7 @@ default_script = inspect.getsource(sample_handler)
 
 @app.route('/debug/<project>', methods=['GET', 'POST'])
 def debug(project):
+    cas_info = request.form.to_dict()
     projectdb = app.config['projectdb']
     if not projectdb.verify_project_name(project):
         return 'project name is not allowed!', 400
@@ -47,7 +50,8 @@ def debug(project):
         script = (default_script
                   .replace('__DATE__', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                   .replace('__PROJECT_NAME__', project)
-                  .replace('__START_URL__', request.values.get('start-urls') or '__START_URL__'))
+                  .replace('__START_URL__', request.values.get('start-urls') or '__START_URL__')
+                  .replace('__Group__', request.values.get('group') or '__START_URL__'))
 
     taskid = request.args.get('taskid')
     if taskid:
@@ -58,7 +62,7 @@ def debug(project):
         task = default_task
 
     default_task['project'] = project
-    return render_template("debug.html", task=task, script=script, project_name=project)
+    return render_template("debug.html", task=task, script=script, project_name=project,cas_user_name = cas_info.get('user_name'))
 
 
 @app.before_first_request
@@ -177,9 +181,11 @@ def save(project):
             and not login.current_user.is_active():
         return app.login_response
 
+    group = re.findall(r"(?<=# Group: )\w+",script)[0]
     if project_info:
         info = {
             'script': script,
+            'group': group,
         }
         if project_info.get('status') in ('DEBUG', 'RUNNING', ):
             info['status'] = 'CHECKING'
@@ -191,6 +197,7 @@ def save(project):
             'status': 'TODO',
             'rate': app.config.get('max_rate', 1),
             'burst': app.config.get('max_burst', 3),
+            'group': group,
         }
         projectdb.insert(project, info)
 

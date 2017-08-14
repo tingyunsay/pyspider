@@ -46,6 +46,9 @@ class ProjectDB(object):
     def get(self, name, fields):
         raise NotImplementedError
 
+    def get_group(self, group, fields):
+        raise NotImplementedError
+
     def drop(self, name):
         raise NotImplementedError
 

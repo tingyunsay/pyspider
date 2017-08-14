@@ -25,8 +25,8 @@ from flask_cas import login
 from flask_cas import logout
 #app = Flask("hong")
 cas = CAS(app)
-app.config['CAS_SERVER'] = 'http://127.0.0.1:8080/cas-server-webapp-4.0.0/'
-#app.config['CAS_SERVER'] = 'http://cas.taihenw.com/'
+#app.config['CAS_SERVER'] = 'http://127.0.0.1:8080/cas-server-webapp-4.0.0/'
+app.config['CAS_SERVER'] = 'http://cas.taihenw.com/'
 app.config['CAS_AFTER_LOGIN'] = '/'
 app.config['SECRET_KEY'] = 'guess'
 #设定logout默认指向页面
@@ -36,19 +36,66 @@ app.config['CAS_AFTER_LOGOUT'] = "http://localhost:5000"
 index_fields = ['name', 'group', 'status', 'comments', 'rate', 'burst', 'updatetime']
 spidermanager_fields = ['name', 'role', 'group' , 'info']
 
-@app.route('/old_index')
+@app.route('/old_index/<user_name>', methods=['POST','GET'])
 @login_required
-def index2():
-    projectdb = app.config['projectdb']
-    projects = sorted(projectdb.get_all(fields=index_fields),
-                      key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
-    return render_template("index.html", projects=projects , info = cas)
-
+def old_index(user_name):
+    target = request.args.to_dict()
+    name = user_name
+    spidermanagerdb = app.config['spidermanagerdb']
+    person_info = spidermanagerdb.get(name , fields=spidermanager_fields)
+    group_info = person_info.get('group')
+    real_group = eval(group_info)
+    role_info = person_info.get('role')
+    if real_group is not None:
+        if role_info in ["Admin","RD"] and target.get('target') == "project":
+            projectdb = app.config['projectdb']
+            all_projects = []
+            for group in real_group:
+                #取出来的值是一个generator
+                add_cas_info = projectdb.get_group(group)
+                for info in add_cas_info:
+                    if info:
+                        #附加cas信息
+                        info['cas_user_name'] = cas.username
+                        all_projects.append(info)
+                    else:
+                        pass
+            projects = sorted(all_projects,key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
+            #projects = sorted(projectdb.get_all(fields=index_fields),
+            #                  key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
+            return render_template("index.html", projects=projects , info = cas)
+        elif role_info in ["Admin","PM"] and target.get('target') == "export":
+            projectdb = app.config['projectdb']
+            #PM所在组的所有表单
+            all_projects = []
+            for group in real_group:
+                # 取出来的值是一个generator
+                all_info = projectdb.get_group(group)
+                for info in all_info:
+                    all_projects.append([info.get('group'),info.get('name')]) if info else None
+            #检索出可导出的数据表
+            resultdb = app.config['resultdb']
+            #所有--- [组,项目,结果条目数]，超过一定部分的限定导出，较少的可以导出
+            all_form = []
+            for project in all_projects:
+                all_form.append([project[0],project[1],resultdb.count(project[1])])
+            return render_template("export.html",all_form = all_form)
+        else:
+            return "，请联系管理员！",404
+    else:
+        all_projects = []
+        warning = "It looks like you did not join any group !"
+        projects = projects = sorted(all_projects,key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
+        return render_template("index.html", projects=projects , info = cas , warning = warning)
 
 @app.route('/')
 @login_required
 def index():
-    return render_template("control.html", info = cas)
+    name = cas.username
+    spidermanagerdb = app.config['spidermanagerdb']
+    person_info = spidermanagerdb.get(name , fields=spidermanager_fields)
+    role = person_info.get('role') if person_info else None
+    return render_template("control.html", info = cas , role = role)
 
 
 @app.route('/check_cas/<user_name>' , methods=['POST','GET'])
@@ -65,9 +112,11 @@ def check_cas(user_name):
             all_info = sorted(spidermanagerdb.get_all(fields=spidermanager_fields))
             return render_template("manager.html",all_info = all_info ,cas_user = name )
         elif person_info['role'] == "RD":
-            return json.dumps(person_info), 200, {'Content-Type': 'application/json'}
+            right = person_info.get('role')
+            return "Your authority is {right} , it's not allow!".format(right=right),400
         elif person_info['role'] == "PM":
-            return json.dumps(person_info), 200, {'Content-Type': 'application/json'}
+            right = person_info.get('role')
+            return "Your authority is {right} , it's not allow!".format(right=right), 400
         else:
             return "Unkonw Error，未知错误，请联系管理员！", 404, {'Content-Type': 'application/json'}
     else:

@@ -58,6 +58,14 @@ class ProjectDB(MySQLMixin, BaseProjectDB, BaseDB):
             return each
         return None
 
+    def get_group(self , group ,fields=None):
+        where = "`group` = %s" % self.placeholder
+        if self._select2dic(what=fields, where=where, where_values=(group,)):
+            return self._select2dic(what=fields, where=where, where_values=(group,))
+        #for each in self._select2dic(what=fields, where=where, where_values=(group,)):
+        #    return each
+        return None
+
     def drop(self, name):
         where = "`name` = %s" % self.placeholder
         return self._delete(where=where, where_values=(name, ))

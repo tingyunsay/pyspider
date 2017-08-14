@@ -26,8 +26,9 @@
       <table width = "100%" border=2 class = "all_info">
       <tr>
       	<th colspan = 5><h1>tingyun-spider dashboard</h1></th>	
-      	<th colspan = 2 style="text-align:right">welcome : {{ info.username }}</th>
-      	<th colspan = 2 style="text-align:right">
+        <th ><a href="/">返回上一层</a></th>
+        <th style="text-align:right">welcome : {{ info.username }}</th>
+      	<th style="text-align:right">
 		<form action="{{ url_for("cas.logout") }}" >
 			<input type="submit" value="注销" logoutRequest={{ info }} />
 		</form>
@@ -96,6 +97,12 @@
                     </div>
                   </div>
                   <div class="form-group">
+                    <label class="col-sm-3 control-label" for="group">Group</label>
+                    <div class="col-sm-9">
+                      <input class="form-control" type="text" name="group">
+                    </div>
+                  </div>
+                  <div class="form-group">
                     <label class="col-sm-3 control-label" for="script-mode">Mode</label>
                     <div class="col-sm-9">
                       <div class="btn-group" data-toggle="buttons">
@@ -110,6 +117,7 @@
                   </div>
                 </div>
                 <div class="modal-footer">
+                  <input type="hidden" value="{{ info.username }}" name="user_name">
                   <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                   <button type="submit" class="btn btn-primary">Create</button>
                 </div>
@@ -119,6 +127,9 @@
         </div>
       </div>
       <table class="table sortable-theme-bootstrap projects">
+        {% if warning %}
+        <h1>{{ warning }}</h1>
+        {% else %}
         <thead>
           <tr>
             <th>group</th>
@@ -135,9 +146,20 @@
         </thead>
         <tbody>
         {% raw %}
+
           <tr v-cloak v-for="project in projects" data-name="{{* project.name }}">
             <td class="project-group"><span>{{ project.group }}</span></td>
-            <td class="project-name"><a href="/debug/{{* project.name }}">{{* project.name }}</a></td>
+            <td class="project-name">
+               <!--<a href="/debug/{{* project.name }}?user_name='{{ info.username }}'">{{* project.name }}</a>-->
+
+              <form method="POST" action="/debug/{{* project.name }}?user_name='test2'">
+              <div>
+                <input type="hidden" value="{{* project.cas_user_name }}" name="user_name">
+                <button type="submit" value="{{* project.name }}">{{* project.name }}</button>
+              </div>
+              </form>
+
+            </td>
             <td class="project-status">
               <span class="status-{{ project.paused ? 'PAUSED' : project.status }}" :data-value="project.paused ? 'PAUSED' : project.status">
                 {{ project.paused ? 'PAUSED' : project.status }}
@@ -184,6 +206,8 @@
           </tr>
         </tbody>
       </table>
+              {% endif %}
+
     </section>
     <script>
       // json projects data for vue

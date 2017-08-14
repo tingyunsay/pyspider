@@ -32,9 +32,11 @@ class SpidermanagerDB(MySQLMixin, BaseSpidermanagerDB, BaseDB):
             `group` TEXT
             ) ENGINE=InnoDB CHARSET=utf8''' % self.escape(self.__tablename__))
 
-    def insert(self, name, obj={}):
+    #def insert(self, name, obj={}):
+    #project需要按照名字插入，用户不需要
+    def insert(self, obj={}):
         obj = dict(obj)
-        obj['name'] = name
+        #obj['name'] = name
         return self._insert(**obj)
 
     def update(self, name, obj={}, **kwargs):

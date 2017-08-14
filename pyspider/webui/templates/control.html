@@ -7,14 +7,13 @@
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
-    <meta name="description" content="pyspider dashboard">
+    <meta name="description" content="results of {{ project }}">
     <meta name="author" content="binux">
     <link href="{{ url_for('cdn', path='twitter-bootstrap/3.1.1/css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('cdn', path='x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css') }}" rel="stylesheet">
-    <link href="{{ url_for('cdn', path='sortable/0.6.0/css/sortable-theme-bootstrap.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='index.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='result.min.css') }}" rel="stylesheet">
 
     <script src="{{ url_for('cdn', path='jquery/1.11.0/jquery.min.js') }}"></script>
+    <script src="{{ url_for('cdn', path='twitter-bootstrap/3.1.1/js/bootstrap.min.js') }}"></script>
   </head>
 
   <body>
@@ -35,17 +34,33 @@
       </tr>
       </table>
 
-    <table>        
-    	<form  method="POST" action="{{ url_for("check_cas", user_name=info.username) }}">
-            <input type="hidden" value = {{ info.username}} name = "name">
-            <input type="submit" value="权限管理"  />
-	    </form>
-    	<form  method="POST" action="{{ url_for("index2") }}" >
-		<input type="submit" value="控制台" name={{ info.username }} />
-	</form>         
-    	<form  method="POST" action="{{ url_for("index2") }}" >
-		<input type="submit" value="报表查看" name={{ info.username }} />
-	</form>         
+    <table class="table sortable-theme-bootstrap projects">
+        <tr>
+            <td>
+                <form method="POST" action="{{ url_for("check_cas",user_name=info.username) }}">
+                    <input type="hidden" value={{ info.username}} name="name">
+                    <input type="submit" value="权限管理">
+                </form>
+            </td>
+        </tr>
+        {% if role in ['Admin','RD']%}
+        <tr>
+            <td>
+                <form method="GET" action="{{ url_for("old_index",user_name=info.username) }}">
+                    <input type="submit" value="project" name="target">
+                </form>
+            </td>
+        </tr>
+        {% endif %}
+        {% if role in ['Admin','PM']%}
+        <tr>
+            <td>
+                <form  method="GET" action="{{ url_for("old_index",user_name=info.username) }}" >
+                    <input type="submit" value="export" name="target" >
+                </form>
+            </td>
+        </tr>
+        {% endif %}
     </table>
  
     <table></br></br></br></br></br></br></br></br></br></br></br>
