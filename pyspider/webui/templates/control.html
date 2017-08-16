@@ -47,6 +47,7 @@
         <tr>
             <td>
                 <form method="GET" action="{{ url_for("old_index",user_name=info.username) }}">
+                    <input type="hidden" value="{{ person_info }}" name="group-info">
                     <input type="submit" value="project" name="target">
                 </form>
             </td>
@@ -56,6 +57,7 @@
         <tr>
             <td>
                 <form  method="GET" action="{{ url_for("old_index",user_name=info.username) }}" >
+                    <input type="hidden" value="{{ person_info }}" name="group-info">
                     <input type="submit" value="export" name="target" >
                 </form>
             </td>

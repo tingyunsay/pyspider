@@ -99,7 +99,24 @@
                   <div class="form-group">
                     <label class="col-sm-3 control-label" for="group">Group</label>
                     <div class="col-sm-9">
-                      <input class="form-control" type="text" name="group">
+                      <input class="form-control" type="text" name="group" list="browsers" autocomplete="off">
+                      <datalist id="browsers">
+                        {% if group %}
+                        {% for i in group %}
+                        <option value="{{ i }}">
+                        {% endfor %}
+                        {% endif %}
+                      </datalist>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label" for="belong">Belong</label>
+                    <div class="col-sm-9">
+                      <select class="form-control" name="belong" id="role">
+                            <option value="all">all</option>
+                            <option value="group">group</option>
+                            <option value="private">private</option>
+                        </select>
                     </div>
                   </div>
                   <div class="form-group">
@@ -118,6 +135,7 @@
                 </div>
                 <div class="modal-footer">
                   <input type="hidden" value="{{ info.username }}" name="user_name">
+                  <input type="hidden" value="{{ must }}" name="must">
                   <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                   <button type="submit" class="btn btn-primary">Create</button>
                 </div>
@@ -133,6 +151,7 @@
         <thead>
           <tr>
             <th>group</th>
+            <th>belong</th>
             <th>project name</th>
             <th>status</th>
             <th data-type="num">rate/burst</th>
@@ -149,11 +168,14 @@
 
           <tr v-cloak v-for="project in projects" data-name="{{* project.name }}">
             <td class="project-group"><span>{{ project.group }}</span></td>
+            <td class="project-belong"><span>{{ project.belong }}</span></td>
             <td class="project-name">
                <!--<a href="/debug/{{* project.name }}?user_name='{{ info.username }}'">{{* project.name }}</a>-->
 
-              <form method="POST" action="/debug/{{* project.name }}?user_name='test2'">
+              <form method="POST" action="/debug/{{* project.name }}?project-name={{* project.name }}">
               <div>
+                <input type="hidden" value="{{ project.must }}" name="project_info">
+                <input type="hidden" value="{{* project.group }}" name="group">
                 <input type="hidden" value="{{* project.cas_user_name }}" name="user_name">
                 <button type="submit" value="{{* project.name }}">{{* project.name }}</button>
               </div>

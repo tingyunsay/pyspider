@@ -100,6 +100,7 @@ app.config.update({
     'queues': dict(),
     'process_time_limit': 30,
     'spidermanagerdb': None,
+    'groupinfodb': None,
 })
 
 

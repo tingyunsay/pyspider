@@ -75,6 +75,8 @@ def connect_rpc(ctx, param, value):
               help='database url for resultdb, default: sqlite')
 @click.option('--spidermanagerdb', envvar='SPIDERMANAGERDB', callback=connect_db,
               help='database url for spidermanagerdb, default: sqlite')
+@click.option('--groupinfodb', envvar='GROUPINFODB', callback=connect_db,
+              help='database url for groupinfodb, default: sqlite')
 @click.option('--message-queue', envvar='AMQP_URL',
               help='connection url to message queue, '
               'default: builtin multiprocessing.Queue')
@@ -102,7 +104,7 @@ def cli(ctx, **kwargs):
     #print os.environ
     #kwargs 默认会有个初始化操作，即是将一些组件置为None ，我们需要根据这个初始化的key，将传入的变量中的真实值传给这些环境变量
     # get db from env
-    for db in ('taskdb', 'projectdb', 'resultdb' ,'spidermanagerdb'):
+    for db in ('taskdb', 'projectdb', 'resultdb' ,'spidermanagerdb','groupinfodb'):
         if kwargs[db] is not None:
             continue
 	#这里是以环境变量为优先，但默认不会走前两个（前提是没有设定mysql的环境变量）,(之前的connect_db已经进行了数据库链接操作)
@@ -345,6 +347,7 @@ def webui(ctx, host, port, cdn, scheduler_rpc, fetcher_rpc, max_rate, max_burst,
     app.config['projectdb'] = g.projectdb
     app.config['resultdb'] = g.resultdb
     app.config['spidermanagerdb'] = g.spidermanagerdb
+    app.config['groupinfodb'] = g.groupinfodb
     app.config['cdn'] = cdn
 
     if max_rate:

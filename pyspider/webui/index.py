@@ -33,42 +33,96 @@ app.config['SECRET_KEY'] = 'guess'
 app.config['CAS_AFTER_LOGOUT'] = "http://localhost:5000"
 
 
-index_fields = ['name', 'group', 'status', 'comments', 'rate', 'burst', 'updatetime']
+index_fields = ['name', 'group', 'status', 'comments', 'rate', 'burst', 'updatetime','belong']
 spidermanager_fields = ['name', 'role', 'group' , 'info']
+groupinfo_fields = ['gname','creater','projects','createtime','updatetime']
 
 @app.route('/old_index/<user_name>', methods=['POST','GET'])
 @login_required
 def old_index(user_name):
     target = request.args.to_dict()
+    #获取需要传递的数据
+    person_info = eval(target.get('group-info').encode('utf8')) if target.get('group-info') else None
+    must_info = person_info
+    role_info = person_info.get('role') if person_info else None
+    #获取需要显示的 -- 相关group的数据
     name = user_name
     spidermanagerdb = app.config['spidermanagerdb']
     person_info = spidermanagerdb.get(name , fields=spidermanager_fields)
     group_info = person_info.get('group')
-    real_group = eval(group_info)
-    role_info = person_info.get('role')
-    if real_group is not None:
+    total_group = eval(group_info)
+    #查询所有人可见的项目，后续update到所属的group的项目中
+    # (若没有所属group，只显示all
+    # {并且对非创建者，剔除了为private的项目，除非cas name和creater相同才显示})
+    projectdb = app.config['projectdb']
+    belong_all_project = projectdb.get_belong('all',index_fields)
+    if belong_all_project:
         if role_info in ["Admin","RD"] and target.get('target') == "project":
-            projectdb = app.config['projectdb']
             all_projects = []
-            for group in real_group:
-                #取出来的值是一个generator
-                add_cas_info = projectdb.get_group(group)
+            #过滤掉private类型的项目，需要去groupinfodb中查询creater信息
+            if total_group:
+                print total_group
+                add_cas_info = []       #最终的数据
+                own_group = []          #对所属group全部显示
+                for group in total_group:
+                    groupinfodb = app.config['groupinfodb']
+                    craeter_name = groupinfodb.get(group).get('creater') if groupinfodb.get(group) else None
+                    if craeter_name == cas.username:
+                        own_group.append(group)
+                other_group = list(set(total_group) - set(own_group))           #对其他group，只显示分类为group的项目（剔除private）
+                if own_group:
+                    for group in own_group:
+                        group_project = list(projectdb.get_group(group))
+                        add_cas_info += group_project
+                if other_group:
+                    for group in other_group:
+                        group_private = []
+                        #获取组内为private的项目名字 A
+                        for i in projectdb.get_group_private(group):
+                            group_private.append(i.get('name'))
+                        group_project = []
+                        #获取组内所有的项目名字
+                        for i in projectdb.get_group(group):
+                            group_project.append(i.get('name'))
+                        #取得两个list的差集 B ， 即在B中有，但在A中没有的
+                        group_diff = list(set(group_project) - set(group_private))
+                        for project in group_diff:
+                            add_cas_info.append(projectdb.get(project))
+                #加上所属为all的项目
+                #对结果数据，附加cas信息，需要使用
+                add_cas_info += list(belong_all_project)
                 for info in add_cas_info:
                     if info:
-                        #附加cas信息
+                        print "fuck:-----------------------:"
+                        print info
+                        print "-------------------------"
+                        print cas.username
+                        print type(cas.username)
                         info['cas_user_name'] = cas.username
+                        info['must'] = str(must_info)
                         all_projects.append(info)
                     else:
                         pass
-            projects = sorted(all_projects,key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
-            #projects = sorted(projectdb.get_all(fields=index_fields),
-            #                  key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
-            return render_template("index.html", projects=projects , info = cas)
+                projects = sorted(all_projects,key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
+                #projects = sorted(projectdb.get_all(fields=index_fields),
+                #                  key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
+                return render_template("index.html", projects=projects , info = cas ,group = eval(person_info.get('group')))
+            else:
+                all_projects = []
+                for info in belong_all_project:
+                    if info:
+                        # 附加cas信息
+                        info['cas_user_name'] = cas.username
+                        info['must'] = str(must_info)
+                        all_projects.append(info)
+                    else:
+                        pass
+                projects = sorted(all_projects, key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
+                return render_template("index.html", projects=projects, info=cas,group=None)
         elif role_info in ["Admin","PM"] and target.get('target') == "export":
-            projectdb = app.config['projectdb']
             #PM所在组的所有表单
             all_projects = []
-            for group in real_group:
+            for group in total_group:
                 # 取出来的值是一个generator
                 all_info = projectdb.get_group(group)
                 for info in all_info:
@@ -81,10 +135,10 @@ def old_index(user_name):
                 all_form.append([project[0],project[1],resultdb.count(project[1])])
             return render_template("export.html",all_form = all_form)
         else:
-            return "，请联系管理员！",404
+            return "invalid error，please connect Administer！",404
     else:
         all_projects = []
-        warning = "It looks like you did not join any group !"
+        warning = "It looks like you did not join any group OR there is't any project belongs to all user!"
         projects = projects = sorted(all_projects,key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
         return render_template("index.html", projects=projects , info = cas , warning = warning)
 
@@ -95,7 +149,7 @@ def index():
     spidermanagerdb = app.config['spidermanagerdb']
     person_info = spidermanagerdb.get(name , fields=spidermanager_fields)
     role = person_info.get('role') if person_info else None
-    return render_template("control.html", info = cas , role = role)
+    return render_template("control.html", info = cas , role = role , person_info = person_info)
 
 
 @app.route('/check_cas/<user_name>' , methods=['POST','GET'])

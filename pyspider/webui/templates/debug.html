@@ -37,7 +37,15 @@
 
   <body>
     <section id="control">
-      <div class="title pull-left"><a href="{{ url_for("old_index", user_name=cas_user_name) }}">pyspider</a> &gt; {{ project_name }}</div>
+      <div class="title pull-left">
+        <form method="get" action="{{ url_for("old_index", user_name=cas_user_name) }}">
+          <input type="hidden" value="{{ must_info }}" name="group-info">
+          <input type="hidden" value="project" name="target">
+          <input type="submit" value={{ project_name }} >
+          <!-- <a href="{{ url_for("old_index", user_name=cas_user_name) }}?target=project&{{ must_info }}">pyspider</a>
+          -->
+      </div>
+        </form>
       <div class="pull-right">
         <a href="http://docs.pyspider.org/" target="_blank">Documentation</a>
         <span class="webdav-btn">WebDAV Mode</span>
@@ -91,6 +99,7 @@
 
       <div id="right-area" class="debug-panel" style="left: 50%">
         <div id="python-editor" class="editor focus">
+          <input type="hidden" id="group_info" value="{{ cas_info }}"></input>
           <div id="save-task-btn">save</div>
         </div>
         <div class="overlay" style="display: none;"></div>

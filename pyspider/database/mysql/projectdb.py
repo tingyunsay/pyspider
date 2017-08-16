@@ -28,6 +28,7 @@ class ProjectDB(MySQLMixin, BaseProjectDB, BaseDB):
         self._execute('''CREATE TABLE IF NOT EXISTS %s (
             `name` varchar(64) PRIMARY KEY,
             `group` varchar(64),
+            `belong` varchar(16),
             `status` varchar(16),
             `script` TEXT,
             `comments` varchar(1024),
@@ -64,6 +65,21 @@ class ProjectDB(MySQLMixin, BaseProjectDB, BaseDB):
             return self._select2dic(what=fields, where=where, where_values=(group,))
         #for each in self._select2dic(what=fields, where=where, where_values=(group,)):
         #    return each
+        return None
+
+    def get_belong(self , belong ,fields=None):
+        where = "`belong` = %s" % self.placeholder
+        if self._select2dic(what=fields, where=where, where_values=(belong,)):
+            return self._select2dic(what=fields, where=where, where_values=(belong,))
+        #for each in self._select2dic(what=fields, where=where, where_values=(group,)):
+        #    return each
+        return None
+
+    #查询所属group中标识为private的项目信息
+    def get_group_private(self, group , fields=None):
+        where = "`group` = %s and `belong` = 'private'" % self.placeholder
+        if self._select2dic(what=fields, where=where, where_values=(group,)):
+            return self._select2dic(what=fields, where=where, where_values=(group,))
         return None
 
     def drop(self, name):

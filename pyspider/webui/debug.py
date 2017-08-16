@@ -25,6 +25,8 @@ from pyspider.libs import utils, sample_handler, dataurl
 from pyspider.libs.response import rebuild_response
 from pyspider.processor.project_module import ProjectManager, ProjectFinder
 from .app import app
+spidermanager_fields = ['name', 'role', 'group' , 'info']
+groupinfo_fields = ['gname','creater','projects','createtime','updatetime']
 
 default_task = {
     'taskid': 'data:,on_start',
@@ -40,6 +42,9 @@ default_script = inspect.getsource(sample_handler)
 @app.route('/debug/<project>', methods=['GET', 'POST'])
 def debug(project):
     cas_info = request.form.to_dict()
+    project_name = request.args.to_dict()
+    cas_info.update(project_name)
+    must_info = eval(cas_info.get('project_info'))
     projectdb = app.config['projectdb']
     if not projectdb.verify_project_name(project):
         return 'project name is not allowed!', 400
@@ -62,7 +67,7 @@ def debug(project):
         task = default_task
 
     default_task['project'] = project
-    return render_template("debug.html", task=task, script=script, project_name=project,cas_user_name = cas_info.get('user_name'))
+    return render_template("debug.html", task=task, script=script,cas_info = cas_info, project_name=project,cas_user_name = cas_info.get('user_name'),must_info=must_info)
 
 
 @app.before_first_request
@@ -172,7 +177,9 @@ def run(project):
 
 @app.route('/debug/<project>/save', methods=['POST', ])
 def save(project):
+    group_info = eval(request.form.to_dict().get('group_info'))
     projectdb = app.config['projectdb']
+    groupinfodb = app.config['groupinfodb']
     if not projectdb.verify_project_name(project):
         return 'project name is not allowed!', 400
     script = request.form['script']
@@ -180,26 +187,72 @@ def save(project):
     if project_info and 'lock' in projectdb.split_group(project_info.get('group')) \
             and not login.current_user.is_active():
         return app.login_response
-
-    group = re.findall(r"(?<=# Group: )\w+",script)[0]
-    if project_info:
+    gname = group_info.get('group')
+    project_name = group_info.get('project-name')
+    belong = group_info.get('belong')
+    #查询组，若这个组之前不存在，说明是新建的组（若存在，则只更新组包含的项目信息，不会更新创建者和创建时间）
+    exists = groupinfodb.get(gname,groupinfo_fields) if groupinfodb.get(gname,groupinfo_fields) else None
+    if exists:
+        #更新修改时间和projects（先取出，再附加成一个值）
+        projects = eval(exists.get('projects'))
+        projects.append(project_name) if isinstance(projects,list) and project_name not in projects else None
         info = {
-            'script': script,
-            'group': group,
+            'projects':str(projects),
         }
-        if project_info.get('status') in ('DEBUG', 'RUNNING', ):
-            info['status'] = 'CHECKING'
-        projectdb.update(project, info)
+        groupinfodb.update(gname,info)
     else:
+        #初始化
+        projects = []
+        projects.append(project_name)
         info = {
-            'name': project,
-            'script': script,
-            'status': 'TODO',
-            'rate': app.config.get('max_rate', 1),
-            'burst': app.config.get('max_burst', 3),
-            'group': group,
+            'gname':gname,
+            'creater':group_info.get('user_name'),
+            'projects':str(projects),
+            'createtime':time.time(),
         }
-        projectdb.insert(project, info)
+        groupinfodb.insert(gname,info)
+
+    #belong初始化，只有在创建的时候才会存在，之后只能由 创建者/管理员 在权限管理中添加，之后的编辑项目，不会更改belong
+    if belong:
+        if project_info:
+            info = {
+                'script': script,
+                'group': gname,
+                'belong': belong,
+            }
+            if project_info.get('status') in ('DEBUG', 'RUNNING', ):
+                info['status'] = 'CHECKING'
+            projectdb.update(project, info)
+        else:
+            info = {
+                'name': project,
+                'script': script,
+                'status': 'TODO',
+                'rate': app.config.get('max_rate', 1),
+                'burst': app.config.get('max_burst', 3),
+                'group': gname,
+                'belong': belong,
+            }
+            projectdb.insert(project, info)
+    else:
+        if project_info:
+            info = {
+                'script': script,
+                'group': gname,
+            }
+            if project_info.get('status') in ('DEBUG', 'RUNNING', ):
+                info['status'] = 'CHECKING'
+            projectdb.update(project, info)
+        else:
+            info = {
+                'name': project,
+                'script': script,
+                'status': 'TODO',
+                'rate': app.config.get('max_rate', 1),
+                'burst': app.config.get('max_burst', 3),
+                'group': gname,
+            }
+            projectdb.insert(project, info)
 
     rpc = app.config['scheduler_rpc']
     if rpc is not None:

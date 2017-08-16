@@ -56,9 +56,9 @@ def _connect_database(url):  # NOQA
         engine, dbtype = scheme[0], scheme[-1]
         other_scheme = "+".join(scheme[1:-1])
 
-    if dbtype not in ('taskdb', 'projectdb', 'resultdb' , 'spidermanagerdb'):
+    if dbtype not in ('taskdb', 'projectdb', 'resultdb' , 'spidermanagerdb','groupinfodb'):
         raise LookupError('unknown database type: %s, '
-                          'type should be one of ["taskdb", "projectdb", "resultdb" , "spidermanagerdb"]', dbtype)
+                          'type should be one of ["taskdb", "projectdb", "resultdb" , "spidermanagerdb","groupinfodb"]', dbtype)
 
     if engine == 'mysql':
         parames = {}
@@ -85,6 +85,9 @@ def _connect_database(url):  # NOQA
         elif dbtype == 'spidermanagerdb':
             from .mysql.spidermanagerdb import SpidermanagerDB
             return SpidermanagerDB(**parames)
+        elif dbtype == 'groupinfodb':
+            from .mysql.groupinfodb import GroupinfoDB
+            return GroupinfoDB(**parames)
         else:
             raise LookupError
     elif engine == 'sqlite':
