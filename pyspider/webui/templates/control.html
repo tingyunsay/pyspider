@@ -35,6 +35,7 @@
       </table>
 
     <table class="table sortable-theme-bootstrap projects">
+        {% if role in ['Admin']%}
         <tr>
             <td>
                 <form method="POST" action="{{ url_for("check_cas",user_name=info.username) }}">
@@ -43,6 +44,7 @@
                 </form>
             </td>
         </tr>
+        {% endif %}
         {% if role in ['Admin','RD']%}
         <tr>
             <td>
@@ -52,6 +54,14 @@
                 </form>
             </td>
         </tr>
+        <tr>
+            <td>
+                <form method="GET" action="{{ url_for('group') }}">
+                    <input type="submit" value="group" name="target">
+                </form>
+            </td>
+        </tr>
+
         {% endif %}
         {% if role in ['Admin','PM']%}
         <tr>

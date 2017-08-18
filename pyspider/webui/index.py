@@ -61,7 +61,6 @@ def old_index(user_name):
             all_projects = []
             #过滤掉private类型的项目，需要去groupinfodb中查询creater信息
             if total_group:
-                print total_group
                 add_cas_info = []       #最终的数据
                 own_group = []          #对所属group全部显示
                 for group in total_group:
@@ -87,17 +86,12 @@ def old_index(user_name):
                         #取得两个list的差集 B ， 即在B中有，但在A中没有的
                         group_diff = list(set(group_project) - set(group_private))
                         for project in group_diff:
-                            add_cas_info.append(projectdb.get(project))
+                            add_cas_info.append(projectdb.get(project))     #get返回的是单条dict数据，不能相加
                 #加上所属为all的项目
                 #对结果数据，附加cas信息，需要使用
                 add_cas_info += list(belong_all_project)
                 for info in add_cas_info:
                     if info:
-                        print "fuck:-----------------------:"
-                        print info
-                        print "-------------------------"
-                        print cas.username
-                        print type(cas.username)
                         info['cas_user_name'] = cas.username
                         info['must'] = str(must_info)
                         all_projects.append(info)
@@ -106,7 +100,7 @@ def old_index(user_name):
                 projects = sorted(all_projects,key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
                 #projects = sorted(projectdb.get_all(fields=index_fields),
                 #                  key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
-                return render_template("index.html", projects=projects , info = cas ,group = eval(person_info.get('group')))
+                return render_template("index.html", projects=projects , info = cas ,group = eval(person_info.get('group')),must_info=must_info)
             else:
                 all_projects = []
                 for info in belong_all_project:
@@ -118,7 +112,7 @@ def old_index(user_name):
                     else:
                         pass
                 projects = sorted(all_projects, key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
-                return render_template("index.html", projects=projects, info=cas,group=None)
+                return render_template("index.html", projects=projects, info=cas,group=None,must_info=must_info)
         elif role_info in ["Admin","PM"] and target.get('target') == "export":
             #PM所在组的所有表单
             all_projects = []
@@ -164,7 +158,13 @@ def check_cas(user_name):
     if person_info:
         if person_info['role'] == 'Admin':
             all_info = sorted(spidermanagerdb.get_all(fields=spidermanager_fields))
-            return render_template("manager.html",all_info = all_info ,cas_user = name )
+            #返回所有组的信息，供前台添加用户时选择
+            groupinfodb = app.config['groupinfodb']
+            all_group_info = groupinfodb.get_all(groupinfo_fields)
+            group_names = []
+            for i in all_group_info:
+                group_names.append(i.get('gname')) if i.get('gname') else None
+            return render_template("manager.html",all_info = all_info ,cas_user = name,group_names=group_names )
         elif person_info['role'] == "RD":
             right = person_info.get('role')
             return "Your authority is {right} , it's not allow!".format(right=right),400
@@ -175,6 +175,28 @@ def check_cas(user_name):
             return "Unkonw Error，未知错误，请联系管理员！", 404, {'Content-Type': 'application/json'}
     else:
     	return "Invid Person，用户不存在，请注册！",403,{'Content-Type': 'application/json'}
+
+@app.route('/group', methods=['POST','GET'])
+@login_required
+def group():
+    target = request.args.to_dict()
+    person_info = eval(target.get('group-info').encode('utf8')) if target.get('group-info') else None
+    login_name = cas.username
+    groupinfodb = app.config['groupinfodb']
+    #查询你创建的组，创建者是根据cas接入的注册人name，在spidermanagerdb中是主键（不会重复）
+    total_group = groupinfodb.get_group(login_name,fields=groupinfo_fields)
+    own_group = []
+    if total_group:
+        for group in total_group:
+            own_group.append(group.get('gname'))
+    #找到所创建的组，去projectdb中查询所有的项目
+    projectdb = app.config['projectdb']
+    all_projects = []
+    for group in own_group:
+        all_projects += list(projectdb.get_group(group))
+    projects = sorted(all_projects, key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
+    return render_template("group.html", projects=projects,info=cas)
+    #return own_group
 
 #限定使用post
 @app.route('/update_right' , methods=['POST',])

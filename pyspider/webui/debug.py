@@ -44,7 +44,7 @@ def debug(project):
     cas_info = request.form.to_dict()
     project_name = request.args.to_dict()
     cas_info.update(project_name)
-    must_info = eval(cas_info.get('project_info'))
+    must_info = eval(cas_info.get('project_info')) if cas_info.get('project_info') else None
     projectdb = app.config['projectdb']
     if not projectdb.verify_project_name(project):
         return 'project name is not allowed!', 400
@@ -211,6 +211,17 @@ def save(project):
             'createtime':time.time(),
         }
         groupinfodb.insert(gname,info)
+
+        #点击save，当组为新的组时候，更新spidermanagerdb，将新的组加到创建人所拥有的组中 update （其他人必须在管理台被加入才能看到group中的可见项）
+        spidermanagerdb = app.config['spidermanagerdb']
+        name = group_info.get('user_name')
+        person_info = spidermanagerdb.get(name,spidermanager_fields)
+        in_group = eval(person_info.get('group')) if person_info.get('group') else None
+        in_group.append(gname)
+        manager_info = {
+            'group':str(in_group)
+        }
+        spidermanagerdb.update(name,manager_info)
 
     #belong初始化，只有在创建的时候才会存在，之后只能由 创建者/管理员 在权限管理中添加，之后的编辑项目，不会更改belong
     if belong:

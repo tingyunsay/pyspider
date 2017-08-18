@@ -56,6 +56,13 @@ class GroupinfoDB(MySQLMixin, BaseGroupinfoDB, BaseDB):
             return each
         return None
 
+    # 查询某人创建的组
+    def get_group(self, creater, fields=None):
+        where = "`creater` = %s" % self.placeholder
+        if self._select2dic(what=fields, where=where, where_values=(creater,)):
+            return self._select2dic(what=fields, where=where, where_values=(creater,))
+        return None
+
     def drop(self, gname):
         where = "`gname` = %s" % self.placeholder
         return self._delete(where=where, where_values=(gname, ))
