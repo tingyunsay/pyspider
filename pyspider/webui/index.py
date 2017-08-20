@@ -25,8 +25,8 @@ from flask_cas import login
 from flask_cas import logout
 #app = Flask("hong")
 cas = CAS(app)
-#app.config['CAS_SERVER'] = 'http://127.0.0.1:8080/cas-server-webapp-4.0.0/'
-app.config['CAS_SERVER'] = 'http://cas.taihenw.com/'
+app.config['CAS_SERVER'] = 'http://127.0.0.1:8080/cas-server-webapp-4.0.0/'
+#app.config['CAS_SERVER'] = 'http://cas.taihenw.com/'
 app.config['CAS_AFTER_LOGIN'] = '/'
 app.config['SECRET_KEY'] = 'guess'
 #设定logout默认指向页面
@@ -216,7 +216,7 @@ def update_right():
             info = {
                 'name': right_info.get('name'),
                 'role': right_info.get('role'),
-                'group': right_info.get('group')
+                'group': str([right_info.get('group')])
             }
             spidermanagerdb.insert(info)
             #res =  json.dumps({"res":['添加用户成功!',200]})
@@ -231,7 +231,9 @@ def edit():
     if request.method == 'POST':
         total_info = request.form.to_dict()
         edit_info = total_info.copy()
-        edit_info.pop('cas_user_name')
+        #更改前端传递过来的group成list类型，再转换成str类型
+        group_str = edit_info.get('group')
+        edit_info['group'] = str(group_str[:-1].split(','))
         spidermanagerdb = app.config['spidermanagerdb']
         all_info = spidermanagerdb.get_all(fields=spidermanager_fields)
         all_name = []
@@ -239,7 +241,8 @@ def edit():
             all_name.append(x.get('name'))
         if edit_info.get('name') in all_name:
             spidermanagerdb.update(edit_info.get('name'),edit_info)
-            return redirect(url_for('check_cas', user_name=total_info.get('cas_user_name')))
+            return json.dumps({ 'status' : 302, 'location' : "/check_cas/"+cas.username })
+            #return redirect(url_for('check_cas', user_name=cas.username))
         else:
             return '未知错误!', 400
     else:
@@ -253,10 +256,16 @@ def edit_page():
         edit_info = request.form.to_dict()
         edit_name = edit_info.get('edit_name')
         spidermanagerdb = app.config['spidermanagerdb']
+        #查询用户现有信息，展示
         all_info = spidermanagerdb.get(edit_name , fields=spidermanager_fields)
-        cas_name = edit_info.get('cas_user_name')
+        cas_name = cas.username
         all_info['cas_user_name'] = cas_name
-        return render_template("edit_page.html",info = all_info)
+        #查询还能添加的组信息（全部组信息，供添加）
+        groupinfodb = app.config['groupinfodb']
+        all_group = []
+        for group in groupinfodb.get_all(groupinfo_fields):
+            all_group.append(group.get('gname'))
+        return render_template("edit_page.html",info = all_info,all_group=all_group)
 
     else:
         return '非法请求!', 400

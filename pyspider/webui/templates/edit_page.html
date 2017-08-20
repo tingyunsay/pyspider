@@ -19,12 +19,15 @@
 <body>
 
 
-<form method="POST" action="{{ url_for("edit") }}">
+<!--<form method="POST" action="{{ url_for('edit') }}">-->
 
 <table align="center" class="table sortable-theme-bootstrap projects">
+
     <tr>
         <td>用户姓名</td>
-        <td> <input value="{{ info.name }}" type="text" name="name"></td>
+        <td>
+            <input value="{{ info.name }}" type="text" name="name"></td>
+            <!--<label><span name="name" data-value="{{ info.name }}">{{ info.name }}</span></label>-->
     </tr>
     <tr>
         <td>所属角色</td>
@@ -32,19 +35,53 @@
     </tr>
     <tr>
         <td>所在用户组</td>
-        <td><input value="{{ info.group }}" type="text" name="group"></td>
+        <td>
+            {% for group in all_group %}
+            {% if group in eval(info.group) %}
+            <input value="{{ group }}" type="checkbox" name="group" checked> {{ group }}
+            {% else %}
+            <input value="{{ group }}" type="checkbox" name="group"> {{ group }}
+            {% endif %}
+            {% endfor %}
+        </td>
     </tr>
     <tr>
         <td>其他信息</td>
         <td><input value="{{ info.info }}" type="text" name="info"></td>
     </tr>
     <tr>
-        <input type="hidden" value="{{ info.cas_user_name }}" name="cas_user_name">
-        <td colspan="2"><input type="submit" value="修改用户信息"></td>
+        <td colspan="2"><input type="button" value="修改用户信息" id="sub"></td>
     </tr>
 </table>
 
-</form>
+<!--</form>-->
+
+<script>
+$("#sub").click(function fuckyou(){  //jquery获取复选框值
+    var s='';
+    $('input[name="group"]:checked').each(function(){
+    s+=$(this).val()+',';
+    });
+    $.ajax({
+            type: "POST",
+            url: "/edit",
+            data: {
+                'group': s,
+                'name': $('input[name="name"]').val(),
+            },
+            dataType: 'json',
+            success: function (data) {
+                if (data.status == 302) {
+                    location.href = data.location;
+                                        }
+                                     }
+    });
+});
+
+</script>
+
+
+
 
 </body>
 </html>
