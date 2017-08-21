@@ -25,8 +25,8 @@ from flask_cas import login
 from flask_cas import logout
 #app = Flask("hong")
 cas = CAS(app)
-app.config['CAS_SERVER'] = 'http://127.0.0.1:8080/cas-server-webapp-4.0.0/'
-#app.config['CAS_SERVER'] = 'http://cas.taihenw.com/'
+#app.config['CAS_SERVER'] = 'http://127.0.0.1:8080/cas-server-webapp-4.0.0/'
+app.config['CAS_SERVER'] = 'http://cas.taihenw.com/'
 app.config['CAS_AFTER_LOGIN'] = '/'
 app.config['SECRET_KEY'] = 'guess'
 #设定logout默认指向页面
@@ -276,14 +276,15 @@ def edit_page():
 def delete():
     right_info = request.form.to_dict()
     spidermanagerdb = app.config['spidermanagerdb']
-    cas_user_name = right_info.get('cas_user')
+    cas_user_name = cas.username
     drop_name = right_info.get('delete_name')
     if drop_name:
         spidermanagerdb.drop(drop_name)
-        return redirect(url_for('check_cas', user_name=cas_user_name))
+        #return redirect(url_for('check_cas', user_name=cas_user_name))
+        return json.dumps({'status': 200, 'location': "/check_cas/" + cas.username})
     else:
-        return "未知错误，请联系管理员！", 404, {'Content-Type': 'application/json'}
-
+        #return "未知错误，请联系管理员！", 404, {'Content-Type': 'application/json'}
+        return json.dumps({'status': 400, 'location': "/check_cas/" + cas.username})
 
 
 @app.route('/queues')
@@ -318,7 +319,7 @@ def project_update():
             and not login.current_user.is_active():
         return app.login_response
 
-    if name not in ('group', 'status', 'rate'):
+    if name not in ('group', 'status', 'rate' , 'belong'):
         return 'unknown field: %s' % name, 400
     if name == 'rate':
         value = value.split('/')

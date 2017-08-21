@@ -75,16 +75,47 @@
                     data-target="#delete-person" id="delete-person">
                 删除权限
             </button>-->
-            <form method="POST" action="{{ url_for("delete")}}">
-                <input name="cas_user" value={{ cas_user }} type="hidden">
+            <!--<form method="POST" action="{{ url_for('delete')}}">
                 <input type="hidden" value={{ i.name }} class="delete_name" name="delete_name">
-            <button type="submit" value="delete" class="btn btn-default btn-lg">Delete</button>
+                <button type="submit" value="delete" class="btn btn-default btn-lg">Delete</button>
             </form>
-            </td>
+            -->
+            <div id="fuck">
+                <input type="hidden" value={{ i.name }} class="delete_name" name="delete_name">
+                <button id="sub" type="button" value="delete" class="btn btn-default btn-lg">Delete</button>
+            </div>
+        </td>
     </tr>
     {% endfor %}
 </table>
-
+<script>
+$("[id=sub]").click(function fk(){  //jquery获取复选框值
+    var statu = confirm("确定删除用户?");
+    if(!statu){
+       return false;
+    }
+    var s = $(this).parent('div').children(".delete_name").val();
+    $.ajax({
+            type: "POST",
+            url: "/delete",
+            data: {
+                'delete_name': s,
+            },
+            dataType: 'json',
+            success: function (data) {
+                if (data.status == 200) {
+                    //location.href = data.location;
+                    alert("delete success!");
+                    location.href = data.location;
+                                        }
+                                     },
+            error: function (data) {
+                    alert("delete failed!");
+                    location.href = data.location;
+                    }
+    });
+});
+</script>
 <div class="modal fade" id="update-right">
     <div class="modal-dialog">
         <div class="modal-content">
