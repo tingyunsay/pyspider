@@ -162,6 +162,8 @@
             <th data-type="num">&nbsp;</th>
             <th data-type="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
             <th data-type="num">actions</th>
+            <th data-type="num">calculate</th>
+            <th data-type="num">failed queue</th>
           </tr>
         </thead>
         <tbody>
@@ -226,6 +228,23 @@
               {% endraw %}
               # endif
             </td>
+            {% raw %}
+            <td class="project-calculate" data-value="{{ project.updatetime }}">
+              <span>
+                success:{{ project.progress['all'].success || 0 }}<br>
+                failed:{{ project.progress['all'].failed || 0 }}<br>
+                pending:{{ project.progress['all'].pending || 0}}<br>
+                tasks:{{ project.progress['all'].task || 0}}
+              </span>
+              {% endraw %}
+            </td>
+            <td>
+              # if config.scheduler_rpc is not none:
+              {% raw %}
+              <a class="btn btn-default btn-xs" href="/failed_tasks?project={{ project.name }}" target=_blank>Failed Tasks</a>
+              {% endraw %}
+              # endif
+            </td>
           </tr>
         </tbody>
       </table>
@@ -242,6 +261,14 @@
     <script src="{{ url_for('cdn', path='vue/1.0.26/vue.min.js') }}"></script>
     <script src="{{ url_for('static', filename='index.min.js') }}"></script>
   </body>
+<script>
+  function nima(){
+    alert(typeof "1111");
+    console.log($(this).val());
+    alert(typeof $(this).val().change());
+}
+
+</script>
 </html>
 <!-- vim: set et sw=2 ts=2 sts=2 ff=unix fenc=utf8 syntax=htmldjango: -->
 
