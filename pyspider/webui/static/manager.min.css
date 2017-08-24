@@ -23,11 +23,17 @@ header .alert {
 }
 
 .projects .project-group {
-	width: 80px
+	font-weight: 700
 }
 
 .projects .project-name {
-	font-weight: 700
+	font-weight: 700;
+	width: 80px
+}
+
+.projects .project-belong {
+	font-weight: 700;
+	width: 80px
 }
 
 .projects .project-status {

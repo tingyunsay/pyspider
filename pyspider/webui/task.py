@@ -11,7 +11,10 @@ from flask import abort, render_template, request, json
 from pyspider.libs import utils
 from .app import app
 
+task_fields = ['taskid','project','url','status','schedule','fetch','process','track','lastcrawltime','updatetime']
 
+#其url格式为：127.0.0.1:5000/task/wangyiyun_album:9e1fb2475efc3237e31ef733cf29f179 ， 使用:分隔
+#这使得不同项目（以名字为主键）中可以使用相同的id值，后续看它是如何生成id值的
 @app.route('/task/<taskid>')
 def task(taskid):
     if ':' not in taskid:
@@ -59,7 +62,7 @@ def tasks():
     except socket.error as e:
         app.logger.warning('connect to scheduler rpc error: %r', e)
         return 'connect to scheduler error', 502
-
+    print updatetime_tasks
     tasks = {}
     result = []
     for updatetime, task in sorted(updatetime_tasks, key=lambda x: x[0]):
@@ -76,6 +79,31 @@ def tasks():
         status_to_string=taskdb.status_to_string
     )
 
+@app.route('/diff_tasks')
+def diff_tasks():
+    rpc = app.config['scheduler_rpc']
+    taskdb = app.config['taskdb']
+    project = request.args.get('project', "")
+    status = request.args.get('status', "")
+    limit = int(request.args.get('limit', 100))
+
+    Failed_tasks = taskdb.load_tasks_limit(status,project,task_fields,limit)
+    Failed_tasks = tasks_format(Failed_tasks)
+    tasks = {}
+    result = []
+    for updatetime, task in sorted(Failed_tasks, key=lambda x: x[0]):
+        key = '%(project)s:%(taskid)s' % task
+        task['updatetime'] = updatetime
+        if key in tasks and tasks[key].get('status', None) == status:
+            result.append(tasks[key])
+        tasks[key] = task
+    result.extend(tasks.values())
+
+    return render_template(
+        "tasks.html",
+        tasks=result,
+        status_to_string=taskdb.status_to_string
+    )
 
 @app.route('/active_tasks')
 def active_tasks():
@@ -101,3 +129,12 @@ def active_tasks():
     return json.dumps(result), 200, {'Content-Type': 'application/json'}
 
 app.template_filter('format_date')(utils.format_date)
+
+def tasks_format(failed_tasks = None):
+    Failed_tasks = []
+    for task in failed_tasks:
+        temp = []
+        temp.append(task.get('updatetime'))
+        temp.append(task)
+        Failed_tasks.append(temp)
+    return json.loads(json.dumps(Failed_tasks))

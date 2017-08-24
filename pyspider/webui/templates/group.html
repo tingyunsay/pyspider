@@ -34,16 +34,16 @@
 <!--<table class="table sortable-theme-boots">-->
     <h1>您创建组的全部项目：</h1>
     <tr>
-        <td>Group</td>
         <td>Project</td>
+        <td>Group</td>
         <td>Belong</td>
         <td>Status</td>
         <td>Updatetime</td>
     </tr>
     {% raw %}
     <tr v-cloak v-for="project in projects" data-name="{{* project.name }}">
-        <td class="project-group"><span>{{ project.group }}</span></td>
         <td class="project-name"><span>{{ project.name }}</span></td>
+        <td class="project-group"><span>{{ project.group }}</span></td>
         <td class="project-belong"><span>{{ project.belong }}</span></td>
         <td class="project-status"><span>{{ project.status }}</span></td>
         <td class="project-updatetime"><span>{{ project.updatetime }}</span></td>

@@ -85,6 +85,23 @@ class TaskDB(MySQLMixin, SplitTableMixin, BaseTaskDB, BaseDB):
             ):
                 yield self._parse(each)
 
+    def load_tasks_limit(self, status, project=None, fields=None, limit=100):
+        if project and project not in self.projects:
+            return
+        where = "`status` = %s order by `updatetime` desc limit %s" % (self.placeholder,self.placeholder)
+
+        if project:
+            projects = [project, ]
+        else:
+            projects = self.projects
+
+        for project in projects:
+            tablename = self._tablename(project)
+            for each in self._select2dic(
+                tablename, what=fields, where=where, where_values=(status,limit )
+            ):
+                yield self._parse(each)
+
     def get_task(self, project, taskid, fields=None):
         if project not in self.projects:
             self._list_project()

@@ -419,3 +419,11 @@ Allow: /$
 Allow: /debug
 Disallow: /debug/*?taskid=*
 """, 200, {'Content-Type': 'text/plain'}
+
+
+#添加jinja2过滤器，进行正则匹配
+import re
+@app.template_filter('get_int')
+def get_int(l):
+    return int(l)
+
