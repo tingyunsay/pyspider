@@ -16,10 +16,6 @@
 
     <script src="{{ url_for('cdn', path='jquery/1.11.0/jquery.min.js') }}"></script>
 
-    <link rel="stylesheet" href="bootstrap.min.css">
-    <link rel="stylesheet" href="bootstrap-table.css">
-
-
 </head>
 <body>
 
@@ -167,20 +163,6 @@ $("[id=sub]").click(function fk(){  //jquery获取复选框值
     </div><!-- /.modal -->
 </div>
 
-
-<script>
-    //$(document).on("click", "#form_submit", function(e){
-    $('#update_right').on("click",".btn",function(){
-        type: "post",
-        url: "/update_right",
-        var info = {
-            "name" : $('#name').val(),
-            "role" : $('#role').val(),
-            "group" : $('#group').val()
-            }
-        alert("nima")
-    })
-</script>
 <script>
     $("#create-project-modal form").on('submit', function(ev) {
         var $this = $(this);

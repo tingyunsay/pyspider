@@ -146,6 +146,11 @@ header .alert {
 	float: left
 }
 
-.global-btn .search-btn-div {
-	float: left
+.search-btn-div {
+    margin:0 auto;
+}
+
+.search-btn-div div{
+    float: left;
+    margin-left:10px;
 }

@@ -9,12 +9,22 @@
 
     <meta name="description" content="pyspider dashboard">
     <meta name="author" content="binux">
-    <link href="{{ url_for('cdn', path='twitter-bootstrap/3.1.1/css/bootstrap.min.css') }}" rel="stylesheet">
+    <!--<link href="{{ url_for('cdn', path='twitter-bootstrap/3.1.1/css/bootstrap.min.css') }}" rel="stylesheet">
+    -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
     <link href="{{ url_for('cdn', path='x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css') }}" rel="stylesheet">
     <link href="{{ url_for('cdn', path='sortable/0.6.0/css/sortable-theme-bootstrap.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='index.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='js/css/bootstrap-select.css') }}" rel="stylesheet">
 
+    <style>
+    body {
+      padding-top: 70px;
+    }
+  </style>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
     <script src="{{ url_for('cdn', path='jquery/1.11.0/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/js/bootstrap-select.js') }}"></script>
     <style type="text/css">
     tr.hide,tr.hide td{display:none;}
     </style>
@@ -70,28 +80,6 @@
         <div class="create-btn-div">
           <button class="project-create btn btn-default btn-primary" data-toggle="modal" data-target="#create-project-modal">Create</button>
         </div>
-
-        <div class="search-btn-div">
-
-          Group：<select id="search-group">
-                <option value="">全部</option>
-                {% if must_info %}
-                {% for i in eval(must_info.group) %}
-                  <option value="{{ i }}">{{ i }}</option>
-                {% endfor %}
-                {% endif %}
-                </select>
-
-          Belong：<select id="Belong">
-                  <option value="">全部</option>
-                  <option value="all">all</option>
-                  <option value="group">group</option>
-                  <option value="private">private</option>
-          </select>
-          Name：<input type="text"  id="Name"/>
-          <input type="button" id="search" value="搜索" onclick="search()" />
-
-        </div>
         <div class="active-btn-div">
           {% if config.scheduler_rpc is not none %}
             <a class="btn btn-default btn-info" href='/tasks' target=_blank>Recent Active Tasks</a>
@@ -99,6 +87,34 @@
         </div>
       </div>
 
+      <div class="search-btn-div">
+        <div>
+          <select class="selectpicker show-tick" id="search-group">
+                <option value="">Group</option>
+                {% if must_info %}
+                {% for i in eval(must_info.group) %}
+                  <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+                {% endif %}
+                </select>
+        </div>
+        <div>
+          <select class="selectpicker show-tick" id="Belong" placeholder="Belong">
+                  <option value="">Belong</option>
+                  <option value="all">all</option>
+                  <option value="group">group</option>
+                  <option value="private">private</option>
+          </select>
+        </div>
+          <div>
+          <input type="text" class="form-control" placeholder="Name" id="Name" style="width:100%"/>
+          </div>
+          <div>
+            <button type="button" class="btn btn-default" id="search" onclick="search()" />Search
+          </div>
+        </div>
+
+        </div>
         <div class="modal fade" id="create-project-modal">
           <div class="modal-dialog">
             <div class="modal-content">

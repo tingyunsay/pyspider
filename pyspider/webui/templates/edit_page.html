@@ -6,55 +6,74 @@
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
 
-    <meta name="description" content="pyspider dashboard">
-    <meta name="author" content="binux">
-    <link href="{{ url_for('cdn', path='twitter-bootstrap/3.1.1/css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('cdn', path='x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css') }}" rel="stylesheet">
-    <link href="{{ url_for('cdn', path='sortable/0.6.0/css/sortable-theme-bootstrap.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='index.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link href="{{ url_for('static', filename='js/css/bootstrap-select.css') }}" rel="stylesheet">
 
-    <script src="{{ url_for('cdn', path='jquery/1.11.0/jquery.min.js') }}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='js/js/bootstrap-select.js') }}"></script>
 </head>
 <body>
-
-
-<!--<form method="POST" action="{{ url_for('edit') }}">-->
 
 <table align="center" class="table sortable-theme-bootstrap projects">
 
     <tr>
         <td>用户姓名</td>
         <td>
-            <input value="{{ info.name }}" type="text" name="name"></td>
+            <input value="{{ info.name }}" class="form-control" type="text" name="name" readonly style="width:15%"></td>
             <!--<label><span name="name" data-value="{{ info.name }}">{{ info.name }}</span></label>-->
     </tr>
     <tr>
         <td>所属角色</td>
-        <td> <input value="{{ info.role }}" type="text" name="role"></td>
+        <td> <!--<input value="{{ info.role }}" type="text" name="role">-->
+            <select id="role" class="form-control" name="role" style="width:15%">
+                <option value="Admin">Admin</option>
+                <option value="RD">RD</option>
+                <option value="PM">PM</option>
+        </select>
+        </td>
     </tr>
     <tr>
         <td>所在用户组</td>
         <td>
             {% for group in all_group %}
             {% if group in eval(info.group) %}
-            <input value="{{ group }}" type="checkbox" name="group" checked> {{ group }}
+            <input value="{{ group }}" type="checkbox" name="group" checked > {{ group }}
             {% else %}
-            <input value="{{ group }}" type="checkbox" name="group"> {{ group }}
+            <input value="{{ group }}" type="checkbox" name="group" > {{ group }}
             {% endif %}
             {% endfor %}
         </td>
     </tr>
     <tr>
         <td>其他信息</td>
-        <td><input value="{{ info.info }}" type="text" name="info"></td>
+        <td><input value="{{ info.info }}" type="text" name="info" class="form-control" style="width:15%"></td>
     </tr>
     <tr>
-        <td colspan="2"><input type="button" value="修改用户信息" id="sub"></td>
+        <td colspan="2"><button type="button" class="btn btn-default" value="修改用户信息" id="sub">Submit</td>
     </tr>
 </table>
 
-<!--</form>-->
+
+
+<script  type = "text/javascript" >
+(function change(){
+    var a = document.getElementById("role").getElementsByTagName("option");
+    var op;
+    var role = {{ info.role|tojson }};
+    for(var i = 0; i < a.length; i++) {
+        var op = a[i].innerText;
+        if(op == role){
+            document.getElementById("role")[i].selected=true;
+            return true;
+        }
+    }
+}());
+
+</script >
+
 
 <script>
 $("#sub").click(function fk(){  //jquery获取复选框值
@@ -67,6 +86,7 @@ $("#sub").click(function fk(){  //jquery获取复选框值
             url: "/edit",
             data: {
                 'group': s,
+                'role': $('#role').val(),
                 'name': $('input[name="name"]').val(),
             },
             dataType: 'json',
@@ -80,8 +100,14 @@ $("#sub").click(function fk(){  //jquery获取复选框值
 
 </script>
 
-
-
-
+<script>
+    var role = {{ info.role|tojson }};
+</script>
+<script src="{{ url_for('cdn', path='twitter-bootstrap/3.1.1/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('cdn', path='x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js') }}"></script>
+    <script src="{{ url_for('cdn', path='sortable/0.6.0/js/sortable.min.js') }}"></script>
+    <script src="{{ url_for('cdn', path='vue/1.0.26/vue.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='index.min.js') }}"></script>
+  </body>
 </body>
 </html>
