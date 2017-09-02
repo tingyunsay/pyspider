@@ -12,19 +12,20 @@
     <link href="{{ url_for('cdn', path='twitter-bootstrap/3.1.1/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('cdn', path='x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css') }}" rel="stylesheet">
     <link href="{{ url_for('cdn', path='sortable/0.6.0/css/sortable-theme-bootstrap.css') }}" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
     <link href="{{ url_for('static', filename='manager.min.css') }}" rel="stylesheet">
 
     <script src="{{ url_for('cdn', path='jquery/1.11.0/jquery.min.js') }}"></script>
 </head>
 <body>
-<table width = "100%" border=2 class = "all_info">
+<table width = "100%" border=0 class = "all_info">
       <tr>
-      	<th colspan = 5><h1>tingyun-spider dashboard</h1></th>
-        <th ><a href="/">返回上一层</a></th>
+      	<th colspan = 5 class="info" ><h1 class="text-muted">Group contorl table</h1></th>
+        <th ><a href="/" class="btn btn-sm btn-info">Return</a></th>
         <th style="text-align:right">welcome : {{ info.username }}</th>
       	<th style="text-align:right">
 		<form action="{{ url_for("cas.logout") }}" >
-			<input type="submit" value="注销" logoutRequest={{ info }} />
+			<input type="submit" class="btn btn-warning" value="注销" logoutRequest={{ info }} />
 		</form>
 	</th>
       </tr>
@@ -32,22 +33,21 @@
 <table class="table sortable-theme-bootstrap projects">
 
 <!--<table class="table sortable-theme-boots">-->
-    <h1>您创建组的全部项目：</h1>
-    <tr>
+    <tr><td class="text-primary" width="22%" style="font-size:20px;">All the projects of the group you have created</td></tr>
+    <tr class="success">
         <td>Project</td>
         <td>Group</td>
         <td>Belong</td>
-        <td>Status</td>
         <td>Updatetime</td>
+        <td>Delete</td>
     </tr>
     {% raw %}
-    <tr v-cloak v-for="project in projects" data-name="{{* project.name }}">
+    <tr v-cloak v-for="project in projects" data-name="{{* project.name }}" class="info">
         <td class="project-name"><span>{{ project.name }}</span></td>
         <td class="project-group"><span>{{ project.group }}</span></td>
         <td class="project-belong"><span>{{ project.belong }}</span></td>
-        <td class="project-status"><span>{{ project.status }}</span></td>
         <td class="project-updatetime"><span>{{ project.updatetime }}</span></td>
-
+        <td class="project-delete warning"><button type="button" class="btn btn-xs btn-danger" id="delete" value="{{ project.group }}" >Delete</button></td>
     </tr>
     {% endraw %}
     <!--
@@ -63,10 +63,6 @@
     -->
 
 </table>
-<script>
-
-
-</script>
 
 <script>
       // json projects data for vue

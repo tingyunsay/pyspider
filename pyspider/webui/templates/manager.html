@@ -14,25 +14,30 @@
     <script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
+
     <script src="{{ url_for('cdn', path='jquery/1.11.0/jquery.min.js') }}"></script>
+
 
 </head>
 <body>
 
 
-<table class="table table-bordered right_control" data-toggle="table" border=0 align="center" style="font-size:22px;">
+<table class="table sortable-theme-bootstrap projects" data-toggle="table" border=0 align="center">
+    <thead>
     <tr>
         <td colspan="3">
-            <button class="btn btn-default btn-lg" data-toggle="modal" data-target="#update-right">Add User</button>
+            <button class="btn btn-sm btn-info" data-toggle="modal" data-target="#update-right">Add User</button>
         </td>
-        <th ><a href="/">返回上一层</a></th>
+        <th ><a class="btn btn-sm btn-info" href="/">Return</a></th>
         <th style="text-align:right">welcome : {{ cas_user }}</th>
         <th style="text-align:right">
-            <form action="{{ url_for("cas.logout") }}" >
-                <input type="submit" value="注销" logoutRequest={{ info }}/>
+            <form action="{{ url_for('cas.logout') }}" >
+                <input type="submit" class="btn btn-sm btn-warning" value="注销" logoutRequest={{ info }}/>
             </form>
     </tr>
-    <tr>
+    </thead>
+    <thead>
+    <tr class="success">
         <td>username</td>
         <td>role</td>
         <td>group</td>
@@ -41,7 +46,9 @@
         <td>删除权限</td>
 
     </tr>
+    </thead>
     {% for i in all_info %}
+    <thead>
     <tr>
         <form method="POST" action="{{ url_for("edit_page") }}">
         <div>
@@ -59,13 +66,13 @@
             <td>{{ i.info }}</td>
             <td>
                 <input type="hidden" value={{ i.name }} name="edit_name">
-                <button type="submit" class="btn btn-default btn-lg nima" data-toggle="modal" id="edit_right">
-                    Submit
+                <button type="submit" class="btn btn-sm btn-info nima" data-toggle="modal" id="edit_right">
+                    Edit
                 </button>
             </td>
             </div>
         </form>
-        <td>
+        <td class="warning">
             <!--<form method="POST" action="{{ url_for("delete")}}">-->
             <!--<button type="submit" id="delete" class="btn btn-default btn-primary btn-lg delete" data-toggle="modal"
                     data-target="#delete-person" id="delete-person">
@@ -78,10 +85,11 @@
             -->
             <div id="fuck">
                 <input type="hidden" value={{ i.name }} class="delete_name" name="delete_name">
-                <button id="sub" type="button" value="delete" class="btn btn-default btn-lg">Delete</button>
+                <button id="sub" type="button" value="delete" class="btn btn-sm btn-danger">Delete</button>
             </div>
         </td>
     </tr>
+    </thead>
     {% endfor %}
 </table>
 <script>
@@ -178,6 +186,9 @@ $("[id=sub]").click(function fk(){  //jquery获取复选框值
       });
 
 </script>
+<script>
+    <script src="{{ url_for('static', filename='manager.min.js') }}"></script>
 
+</script>
 </body>
 </html>

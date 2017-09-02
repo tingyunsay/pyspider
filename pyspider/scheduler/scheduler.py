@@ -703,6 +703,13 @@ class Scheduler(object):
             return True
         application.register_function(send_task, 'send_task')
 
+        def retry_task(task):
+            self.update_task(task)
+            self.projects[task['project']].task_queue.put(task['taskid'])
+            self.run_once()
+            return True
+        application.register_function(retry_task, 'retry_task')
+
         def update_project():
             self._force_update_project = True
         application.register_function(update_project, 'update_project')
@@ -868,6 +875,8 @@ class Scheduler(object):
         except KeyError as e:
             logger.error("Bad status pack: %s", e)
             return None
+        logging.error("i am here......")
+        logging.error(self.projects[task['project']].task_queue.processing.queue)
 
         if procesok:
             ret = self.on_task_done(task)

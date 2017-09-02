@@ -23,15 +23,15 @@ from flask_cas import CAS, login_required
 #from flask.ext.cas import logout
 from flask_cas import login
 from flask_cas import logout
-#app = Flask("hong")
 cas = CAS(app)
-#app.config['CAS_SERVER'] = 'http://127.0.0.1:8080/cas-server-webapp-4.0.0/'
-app.config['CAS_SERVER'] = 'http://cas.taihenw.com/'
-app.config['CAS_AFTER_LOGIN'] = '/'
+
+#cas = CAS(app, '/cas')
+app.config['CAS_SERVER'] = 'http://127.0.0.1:8080/cas-server-webapp-4.0.0/'
+#app.config['CAS_SERVER'] = 'http://cas.taihenw.com/cas/'
+app.config['CAS_AFTER_LOGIN'] = 'index'
 app.config['SECRET_KEY'] = 'guess'
 #设定logout默认指向页面
-app.config['CAS_AFTER_LOGOUT'] = "http://localhost:5000"
-
+app.config['CAS_AFTER_LOGOUT'] = "http://localhost:5000/login"
 
 index_fields = ['name', 'group', 'status', 'comments', 'rate', 'burst', 'updatetime','belong']
 spidermanager_fields = ['name', 'role', 'group' , 'info']
@@ -139,12 +139,23 @@ def old_index(user_name):
 @app.route('/')
 @login_required
 def index():
-    name = cas.username
-    spidermanagerdb = app.config['spidermanagerdb']
-    person_info = spidermanagerdb.get(name , fields=spidermanager_fields)
-    role = person_info.get('role') if person_info else None
-    return render_template("control.html", info = cas , role = role , person_info = person_info)
-
+    #cas登录成功，跳转到此页面，对其每个新来的用户在spidermanagerdb中创建一个账号，下次再来即直接读取账号信息
+    if cas:
+        name = cas.username
+        spidermanagerdb = app.config['spidermanagerdb']
+        isexists = spidermanagerdb.get(name,spidermanager_fields)
+        if isexists:
+            person_info = spidermanagerdb.get(name , fields=spidermanager_fields)
+            role = person_info.get('role') if person_info else None
+            return render_template("control.html", info = cas , role = role , person_info = person_info)
+        else:
+            new_person = {}
+            new_person['name'] = name
+            new_person['role'] = "PM"
+            #默认添加到Test组，可以查看相关的报表，需要查看其他组的数据，联系管理员加组；或者是要升级成RD
+            new_person['group'] = "['Test']"
+            spidermanagerdb.insert(new_person)
+            return render_template("control.html", info = cas , role = "PM" , person_info = new_person)
 
 @app.route('/check_cas/<user_name>' , methods=['POST','GET'])
 @login_required
@@ -197,6 +208,26 @@ def group():
     projects = sorted(all_projects, key=lambda k: (0 if k['group'] else 1, k['group'] or '', k['name']))
     return render_template("group.html", projects=projects,info=cas)
     #return own_group
+
+@app.route('/project_delete', methods=['POST',])
+@login_required
+def project_delete():
+    if request.method == "POST":
+        delete_name = request.form['delete_name'].encode('utf8')
+        group = request.form['group'].encode('utf8')
+
+        projectdb = app.config['projectdb']
+        groupinfodb = app.config['groupinfodb']
+
+        projectdb.drop(delete_name)
+        projects = eval(groupinfodb.get(group).get('projects').encode('utf8'))
+        projects.remove(delete_name)
+        info = {
+            "projects": str(projects),
+        }
+        groupinfodb.update(group,info)
+        return json.dumps({'status': 200, 'location': "/group?target=group"})
+    return json.jsonify({"code":404,"msg":"illigal request!!",'location': "/group?target=group"})
 
 #限定使用post
 @app.route('/update_right' , methods=['POST',])

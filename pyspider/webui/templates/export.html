@@ -18,11 +18,11 @@
 </head>
 <body>
 <table>
-    <a href="/">返回上一层</a>
+    <a href="/" class="btn btn-info">返回上一层</a>
 
 </table>
 <table align="left" class="table sortable-theme-bootstrap projects">
-    <tr>
+    <tr class="success">
         <td>Group</td>
         <td>project name</td>
         <td>result counts</td>
@@ -35,8 +35,8 @@
         <td>{{ project[0] }}</td>
         <td>{{ project[1] }}</td>
         <td>{{ project[2] }}</td>
-        <td><a href="/results/dump/{{ project[1] }}.json" target="_blank" class="btn btn-default btn-sm">Json</a></td>
-        <td><a href="/results/dump/{{ project[1] }}.csv" target="_blank" class="btn btn-default btn-sm">Csv</a></td>
+        <td class="warning"><a href="/results/dump/{{ project[1] }}.json" target="_blank" class="btn btn-default btn-sm">Json</a></td>
+        <td class="info"><a href="/results/dump/{{ project[1] }}.csv" target="_blank" class="btn btn-default btn-sm">Csv</a></td>
     </tr>
 
 {% endfor %}

@@ -17,11 +17,7 @@
     <link href="{{ url_for('static', filename='index.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='js/css/bootstrap-select.css') }}" rel="stylesheet">
 
-    <style>
-    body {
-      padding-top: 70px;
-    }
-  </style>
+
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
     <script src="{{ url_for('cdn', path='jquery/1.11.0/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/js/bootstrap-select.js') }}"></script>
@@ -36,19 +32,19 @@
         <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         Project is not started, please set status to RUNNING or DEBUG.
       </div>
-      <table width = "100%" border=2 class = "all_info">
+      <table width = "100%" border="0" class = "all_info">
       <tr>
       	<th colspan = 5><h1>tingyun-spider dashboard</h1></th>
-        <th ><a href="/">返回上一层</a></th>
+        <th ><a href="/" class="btn btn-sm btn-info">Return</a></th>
         <th style="text-align:right">welcome : {{ info.username }}</th>
       	<th style="text-align:right">
-		<form action="{{ url_for("cas.logout") }}" >
-			<input type="submit" value="注销" logoutRequest={{ info }} />
+		<form action="{{ url_for('cas.logout') }}" >
+			<input type="submit" class="btn btn-warning" value="注销" logoutRequest={{ info }} />
 		</form>
 	</th>
       </tr>
       </table>
-      <table class="table queue-info" border = 2>
+      <table class="table queue-info" border = 0>
         <tr>
           <th>scheduler</th>
           <td class="queue_value" title="scheduler2fetcher">???</td>
@@ -221,7 +217,7 @@
                 <input type="hidden" value="{{ project.must }}" name="project_info">
                 <input type="hidden" value="{{* project.group }}" name="group">
                 <input type="hidden" value="{{* project.cas_user_name }}" name="user_name">
-                <button type="submit" value="{{* project.name }}">{{* project.name }}</button>
+                <button type="submit" class="btn btn-xs btn-info" value="{{* project.name }}">{{* project.name }}</button>
               </div>
               </form>
 
@@ -272,10 +268,10 @@
             {% raw %}
             <td class="project-calculate" data-value="{{ project.updatetime }}">
               <span>
-                success:{{ project.progress['all'].success || 0 }} |
-                failed:{{ project.progress['all'].failed || 0 }} |
-                pending:{{ project.progress['all'].pending || 0}} |
-                tasks:{{ project.progress['all'].task || 0}}
+                success:<span style="color:green;font-weight:bold">{{ project.progress['all'].success || 0 }} </span>|
+                failed:<span style="color:red;font-weight:bold">{{ project.progress['all'].failed || 0 }}</span> |
+                pending:<span style="color:blue;font-weight:bold">{{ project.progress['all'].pending || 0}}</span> |
+                tasks:<span style="color:black;font-weight:bold">{{ project.progress['all'].task || 0}}</span>
               </span>
               {% endraw %}
             </td>

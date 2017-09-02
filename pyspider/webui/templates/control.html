@@ -22,13 +22,13 @@
         <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         Project is not started, please set status to RUNNING or DEBUG.
       </div>
-      <table width = "100%" border=2 class = "all_info">
+      <table width = "100%" border=0 class = "all_info">
       <tr>
-      	<th colspan = 5><h1>tingyun-spider dashboard</h1></th>	
+      	<th colspan = 5><h1 class="text-success">Control Table</h1></th>
       	<th colspan = 2 style="text-align:right">welcome : {{ info.username }}</th>
       	<th colspan = 2 style="text-align:right">
 		<form action="{{ url_for("cas.logout") }}" >
-			<input type="submit" value="注销" logoutRequest={{ info }} />
+			<input type="submit" class="btn btn-warning" value="注销" logoutRequest={{ info }} />
 		</form>
 	</th>
       </tr>
@@ -40,7 +40,7 @@
             <td>
                 <form method="POST" action="{{ url_for("check_cas",user_name=info.username) }}">
                     <input type="hidden" value={{ info.username}} name="name">
-                    <input type="submit" value="权限管理">
+                    <input type="submit" class="btn btn-info" value="权限管理">
                 </form>
             </td>
         </tr>
@@ -50,14 +50,14 @@
             <td>
                 <form method="GET" action="{{ url_for("old_index",user_name=info.username) }}">
                     <input type="hidden" value="{{ person_info }}" name="group-info">
-                    <input type="submit" value="project" name="target">
+                    <input type="submit" class="btn btn-info" value="project" name="target">
                 </form>
             </td>
         </tr>
         <tr>
             <td>
                 <form method="GET" action="{{ url_for('group') }}">
-                    <input type="submit" value="group" name="target">
+                    <input type="submit" class="btn btn-info" value="group" name="target">
                 </form>
             </td>
         </tr>
@@ -68,22 +68,13 @@
             <td>
                 <form  method="GET" action="{{ url_for("old_index",user_name=info.username) }}" >
                     <input type="hidden" value="{{ person_info }}" name="group-info">
-                    <input type="submit" value="export" name="target" >
+                    <input type="submit" class="btn btn-info" value="export" name="target" >
                 </form>
             </td>
         </tr>
         {% endif %}
     </table>
- 
-    <table></br></br></br></br></br></br></br></br></br></br></br>
-	CAS INFO:</br>
-	{{ info.attributes }} </br>
-	{{ info.token }} </br>
-	{{ info.username }} </br>
-	{{ info.app }} </br>
-	{{ info.__dict__ }} </br>
-	{{ info.__weakref__ }} </br>
-    </table>
+
     
     <script src="{{ url_for('cdn', path='twitter-bootstrap/3.1.1/js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('cdn', path='x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js') }}"></script>
