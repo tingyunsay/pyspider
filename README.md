@@ -1,87 +1,77 @@
-pyspider [![Build Status]][Travis CI] [![Coverage Status]][Coverage] [![Try]][Demo]
-========
+pyspider的基本使用请移步:https://github.com/binux/pyspider/blob/master/README.md
 
-A Powerful Spider(Web Crawler) System in Python. **[TRY IT NOW!][Demo]**
+## 添加部分自定义功能
+1.需要接入cas，添加用户管理功能
+2.任务分组，权限管理
+3.单个任务重试功能（暂时不支持批量）
+4.修改页面ui显示，能显示成功/失败/调度中 三种情况的任务
+5.添加简单的检索
 
-- Write script in Python
-- Powerful WebUI with script editor, task monitor, project manager and result viewer
-- [MySQL](https://www.mysql.com/), [MongoDB](https://www.mongodb.org/), [Redis](http://redis.io/), [SQLite](https://www.sqlite.org/), [Elasticsearch](https://www.elastic.co/products/elasticsearch); [PostgreSQL](http://www.postgresql.org/) with [SQLAlchemy](http://www.sqlalchemy.org/) as database backend
-- [RabbitMQ](http://www.rabbitmq.com/), [Beanstalk](http://kr.github.com/beanstalkd/), [Redis](http://redis.io/) and [Kombu](http://kombu.readthedocs.org/) as message queue
-- Task priority, retry, periodical, recrawl by age, etc...
-- Distributed architecture, Crawl Javascript pages, Python 2.{6,7}, 3.{3,4,5,6} support, etc...
+## 需要自定义安装的环境
 
-Tutorial: [http://docs.pyspider.org/en/latest/tutorial/](http://docs.pyspider.org/en/latest/tutorial/)  
-Documentation: [http://docs.pyspider.org/](http://docs.pyspider.org/)  
-Release notes: [https://github.com/binux/pyspider/releases](https://github.com/binux/pyspider/releases)  
-
-Sample Code 
------------
-
+### 安装cas相关环境
+1.安装依赖库
 ```python
-from pyspider.libs.base_handler import *
+git clone https://github.com/cameronbwhite/Flask-CAS.git
 
+cd Flask-CAS/
 
-class Handler(BaseHandler):
-    crawl_config = {
-    }
-
-    @every(minutes=24 * 60)
-    def on_start(self):
-        self.crawl('http://scrapy.org/', callback=self.index_page)
-
-    @config(age=10 * 24 * 60 * 60)
-    def index_page(self, response):
-        for each in response.doc('a[href^="http"]').items():
-            self.crawl(each.attr.href, callback=self.detail_page)
-
-    def detail_page(self, response):
-        return {
-            "url": response.url,
-            "title": response.doc('title').text(),
-        }
+python setup.py install
 ```
 
-[![Demo][Demo Img]][Demo]
+2.安装tomcat并设定账号密码
+下载：https://tomcat.apache.org/download-80.cgi
+随便下个版本，解压
 
+1).修改tomcat管理员账号密码
+```python
+vi  ./home/cas_wocking/Tomcat/tomcat-8.5.16/conf/tomcat-users.xml
 
-Installation
-------------
+#找到如下格式的一行，修改管理员账号密码
+<user username="tingyun" password="tingyun" roles="manager-gui,admin-gui"/>
+```
+2).修改用户账号密码
+```python
+#以下是允许登录的用户账号密码，可配置多个
+vi /home/cas_docking/Tomcat/tomcat-8.5.16/webapps/cas/WEB-INF/deployerConfigContext.xml
 
-* `pip install pyspider`
-* run command `pyspider`, visit [http://localhost:5000/](http://localhost:5000/)
+#找到其中<property name="users">这一部分，可添加多个
+<map>
+     <entry key="tingyun" value="tingyun"/>
+</map>
+```
+3).启动tomcat
+```python
+sh  /home/cas_docking/Tomcat/tomcat-8.5.16/bin/startup.sh
+```
 
-**WARNING:** WebUI is open to the public by default, it can be used to execute any command which may harm your system. Please use it in an internal network or [enable `need-auth` for webui](http://docs.pyspider.org/en/latest/Command-Line/#-config).
+### 启动依赖配置
+1.启动redis
+```python
+vi /etc/redis.conf
 
-Quickstart: [http://docs.pyspider.org/en/latest/Quickstart/](http://docs.pyspider.org/en/latest/Quickstart/)
+#将bind 127.0.0.1注释掉，换成如下
+bind 0.0.0.0
 
-Contribute
-----------
+#启动
+redis-server /etc/redis.conf
+```
 
-* Use It
-* Open [Issue], send PR
-* [User Group]
-* [中文问答](http://segmentfault.com/t/pyspider)
+2.mysql设定远程访问
+```python
+grant all PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'tingyun' WITH GRANT OPTION;
 
+flush privileges;
+```
 
-TODO
-----
+### 使用本项目代码
+```python
+git clone https://github.com/tingyunsay/pyspider.git
+```
+配置好config.json文件
 
-### v0.4.0
+运行
+```python
+./runc.py -c config.json
+```
 
-- [ ] a visual scraping interface like [portia](https://github.com/scrapinghub/portia)
-
-
-License
--------
-Licensed under the Apache License, Version 2.0
-
-
-[Build Status]:         https://img.shields.io/travis/binux/pyspider/master.svg?style=flat
-[Travis CI]:            https://travis-ci.org/binux/pyspider
-[Coverage Status]:      https://img.shields.io/coveralls/binux/pyspider.svg?branch=master&style=flat
-[Coverage]:             https://coveralls.io/r/binux/pyspider
-[Try]:                  https://img.shields.io/badge/try-pyspider-blue.svg?style=flat
-[Demo]:                 http://demo.pyspider.org/
-[Demo Img]:             https://github.com/binux/pyspider/blob/master/docs/imgs/demo.png
-[Issue]:                https://github.com/binux/pyspider/issues
-[User Group]:           https://groups.google.com/group/pyspider-users

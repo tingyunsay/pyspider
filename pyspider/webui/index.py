@@ -153,7 +153,7 @@ def index():
             new_person['name'] = name
             new_person['role'] = "PM"
             #默认添加到Test组，可以查看相关的报表，需要查看其他组的数据，联系管理员加组；或者是要升级成RD
-            new_person['group'] = "['Test']"
+            new_person['group'] = "[u'Test']"
             spidermanagerdb.insert(new_person)
             return render_template("control.html", info = cas , role = "PM" , person_info = new_person)
 
