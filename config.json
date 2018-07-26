@@ -1,12 +1,24 @@
 {
-  "taskdb": "mysql+taskdb://root:tingyun@localhost:3306/taskdb2",
-  "projectdb": "mysql+projectdb://root:tingyun@localhost:3306/projectdb2",
-  "resultdb": "mysql+resultdb://root:tingyun@localhost:3306/resultdb2",
-  "spidermanagerdb": "mysql+spidermanagerdb://root:tingyun@localhost:3306/spidermanagerdb",
+  "taskdb": "mysql+taskdb://tingyun:tingyun@localhost:3306/taskdb",
+  "projectdb": "mysql+projectdb://tingyun:tingyun@localhost:3306/projectdb",
+  "resultdb": "mysql+resultdb://tingyun:tingyun@localhost:3306/resultdb",
+  "spidermanagerdb": "mysql+spidermanagerdb://tingyun:tingyun@localhost:3306/spidermanagerdb",
+  "groupinfodb": "mysql+groupinfodb://tingyun:tingyun@localhost:3306/groupinfodb",
   "message_queue": "redis://127.0.0.1:6379/db",
-  "webui": {
-    "username": "hong",
-    "password": "hong",
-    "need-auth": true
-  }
+  "webui":{
+  	"host":"0.0.0.0",
+        "port":5000,
+        "scheduler-rpc":"http://127.0.0.1:5001",
+        "fetcher-rpc":"http://127.0.0.1:5002"
+   	},
+  "scheduler":{
+        "xmlrpc":true,
+        "xmlrpc-host":"0.0.0.0",
+        "xmlrpc-port":5001
+        },
+  "fetcher":{
+        "xmlrpc":true,
+        "xmlrpc-host":"0.0.0.0",
+        "xmlrpc-port":5002
+        }
 }

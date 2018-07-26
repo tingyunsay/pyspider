@@ -10,7 +10,7 @@ pyspider的基本使用请移步:https://github.com/binux/pyspider/blob/master/R
 ## 需要自定义安装的环境
 
 ### 安装cas相关环境
-1.安装依赖库
+1.安装cas依赖库
 ```python
 git clone https://github.com/cameronbwhite/Flask-CAS.git
 
@@ -18,24 +18,40 @@ cd Flask-CAS/
 
 python setup.py install
 ```
+安装mysql的驱动库
+```python
+pip install mysql-connector-python
+
+pip install mysql-connector
+```
 
 2.安装tomcat并设定账号密码
-下载：https://tomcat.apache.org/download-80.cgi  
-随便下个版本，解压
-
+下载apache包，并解压使用  
+```python
+https://archive.apache.org/dist/tomcat/tomcat-8/v8.5.16/bin/apache-tomcat-8.5.16.tar.gz
+```
 1).修改tomcat管理员账号密码
 ```python
-vi  ./home/cas_wocking/Tomcat/tomcat-8.5.16/conf/tomcat-users.xml
+vi  ./apache-tomcat-8.5.16/conf/tomcat-users.xml
 
-#找到如下格式的一行，修改管理员账号密码
+#直接添加在最后一行，修改管理员账号密码
 <user username="tingyun" password="tingyun" roles="manager-gui,admin-gui"/>
 ```
-启动完之后可以登录http://127.0.0.1:8080/manager/status 查看服务器的状态
 
-2).修改用户账号密码
+2).配置cas工程，并修改用户账号密码
+```python
+#下载cas的war包,解压到webapps的目录下,本项目根目录./cas_war/下
+cd ./cas_war/* ./apache-tomcat-8.5.16/webapps
+
+tar -zxvf cas-server-webapp-4.0.0.tar.gz
+
+#重命名这个目录的名字，代码中是使用的cas这个名字
+mv cas-server-webapp-4.0.0 cas
+```
+
 ```python
 #以下是允许登录的用户账号密码，可配置多个
-vi /home/cas_docking/Tomcat/tomcat-8.5.16/webapps/cas/WEB-INF/deployerConfigContext.xml
+vi ./apache-tomcat-8.5.16/webapps/cas/WEB-INF/deployerConfigContext.xml
 
 #找到其中<property name="users">这一部分，可添加多个
 <map>
@@ -44,9 +60,11 @@ vi /home/cas_docking/Tomcat/tomcat-8.5.16/webapps/cas/WEB-INF/deployerConfigCont
 ```
 后续登录pyspider时候需要使用到当前位置设定的账号密码
 
+启动完之后可以登录http://127.0.0.1:8080/manager/status 查看服务器的状态
+
 3).启动tomcat
 ```python
-sh  /home/cas_docking/Tomcat/tomcat-8.5.16/bin/startup.sh
+sh ./apache-tomcat-8.5.16/bin/startup.sh
 ```
 
 ### 启动依赖配置
@@ -87,6 +105,8 @@ phantomjs -v
 #安装相关依赖包
 pip install selenium
 pip install logging
+pip install redis
+pip install pymysql
 ```
 
 
